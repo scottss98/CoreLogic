@@ -1,8 +1,14 @@
 <!DOCTYPE HTML>
 <%@ page trimDirectiveWhitespaces="true" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <html>
 	<head>
 		<title>Core Logic RP Data Property Search Demo</title>
+		<style>
+			.tableWithBorder {
+				border-collapse: collapse;
+			}
+		</style>
 		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
 		<script type="text/javascript">
 			$(document).ready(function() {
@@ -16,7 +22,7 @@
 				var types = "";
 				$(".suggestionTypes:checked").each(function(index, value){
 					if (types != "") {
-						types += ", " + value.id;					
+						types += "," + value.id;					
 					}
 					else {
 						types = value.id;
@@ -37,23 +43,23 @@
 	</head>
 	<body>
 		<H1>Core Logic RP Data Property Search Demo</H1>
-		<form action="/property" method="get" id="mainForm">
+		<form action="/propertySearch" method="post" id="mainForm">
 			<table>
 				<tr>
 					<td>Query</td>
-					<td><input type="text" name="query" value="2903" required/></td>
+					<td><input type="text" name="query" value="${query}" placeholder="2903" required/></td>
 				</tr>
 				<tr>
 					<td>Types</td>
 					<td>
-						<input type="checkbox" class="suggestionTypes" id="address" checked>address</input>
-						<input type="checkbox" class="suggestionTypes" id="street" checked>street</input>
-						<input type="checkbox" class="suggestionTypes" id="locality" checked>locality</input>
-						<input type="checkbox" class="suggestionTypes" id="postcode">postcode</input>
-						<input type="checkbox" class="suggestionTypes" id="territorialAuthority">territorialAuthority</input>
-						<input type="checkbox" class="suggestionTypes" id="councilArea">councilArea</input>
-						<input type="checkbox" class="suggestionTypes" id="state">state</input>
-						<input type="checkbox" class="suggestionTypes" id="country">country</input>
+						<input type="checkbox" class="suggestionTypes" id="address" checked>Address
+						<input type="checkbox" class="suggestionTypes" id="street" checked>Street
+						<input type="checkbox" class="suggestionTypes" id="locality" checked>Locality
+						<input type="checkbox" class="suggestionTypes" id="postcode">Post Code
+						<input type="checkbox" class="suggestionTypes" id="territorialAuthority">Territorial Authority
+						<input type="checkbox" class="suggestionTypes" id="councilArea">Council Area
+						<input type="checkbox" class="suggestionTypes" id="state">State
+						<input type="checkbox" class="suggestionTypes" id="country">Country
 						<input type="hidden" name="suggestionTypes" id="suggestionTypes"/>
 					</td>
 				</tr>
@@ -89,5 +95,43 @@
 			<option value="true">
 			<option value="false">
 		</datalist>
+		
+		<c:set var="suggestions" value="${suggestionResponse.suggestions}"/>
+		<c:if test="${!empty suggestions}">
+		<hr>
+
+		<table border="1" class="tableWithBorder">
+			<tr>
+				<th>Council Area Id</th>
+				<th>Country Id</th>
+				<th>Body Corporate?</th>
+				<th>Unit?</th>
+				<th>Locality Id</th>
+				<th>Post Code Id</th>
+				<th>Property Id</th>
+				<th>State Id</th>
+				<th>Street Id</th>
+				<th>Suggestion</th>
+				<th>Suggestion Type</th>
+				<th>Territorial Authority Id</th>
+			</tr>		
+			<c:forEach items="${suggestions}" var="suggestion">
+				<tr>
+					<td>${suggestion.councilAreaId}</td>
+					<td>${suggestion.countryId}</td>
+					<td>${suggestion.isBodyCorporate}</td>
+					<td>${suggestion.isUnit}</td>
+					<td>${suggestion.localityId}</td>
+					<td>${suggestion.postcodeId}</td>
+					<td><a href="/property?id=${suggestion.propertyId}">${suggestion.propertyId}</a></td>
+					<td>${suggestion.stateId}</td>
+					<td>${suggestion.streetId}</td>
+					<td>${suggestion.suggestion}</td>
+					<td>${suggestion.suggestionType}</td>
+					<td>${suggestion.territorialAuthorityId}</td>
+				</tr>
+			</c:forEach>
+		</table>
+		</c:if>
 	</body>
 </html>

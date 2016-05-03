@@ -71,33 +71,6 @@ public class SuggestionResponse {
 
 	}
 
-	private static void appendOptional(StringBuilder sb, String name, Integer value) {
-		if (value != null) {
-			if (sb.length() > 0) {
-				sb.append(", ");
-			}
-			sb.append(name).append(value);
-		}
-	}
-
-	private static void appendOptional(StringBuilder sb, String name, Boolean value) {
-		if (value != null) {
-			if (sb.length() > 0) {
-				sb.append(", ");
-			}
-			sb.append(name).append(value);
-		}
-	}
-
-	private static void appendOptional(StringBuilder sb, String name, String value) {
-		if (value != null) {
-			if (sb.length() > 0) {
-				sb.append(", ");
-			}
-			sb.append(name).append(value);
-		}
-	}
-
 	public static class Message {
 		private Integer code;
 		private String message;
@@ -139,9 +112,9 @@ public class SuggestionResponse {
 		@Override
 		public String toString() {
 			StringBuilder sb = new StringBuilder();
-			appendOptional(sb, "Code: ", code);
-			appendOptional(sb, "Message: ", message);
-			appendOptional(sb, "Type: ", type);
+			Utils.appendOptional(sb, "Code: ", code);
+			Utils.appendOptional(sb, "Message: ", message);
+			Utils.appendOptional(sb, "Type: ", type);
 			return sb.toString();
 		}
 	}
@@ -279,18 +252,18 @@ public class SuggestionResponse {
 		@Override
 		public String toString() {
 			StringBuilder sb = new StringBuilder();
-			appendOptional(sb, "Council Area Id: ", councilAreaId);
-			appendOptional(sb, "Country Id: ", countryId);
-			appendOptional(sb, "Body Corporate: ", isBodyCorporate);
-			appendOptional(sb, "Unit: ", isUnit);
-			appendOptional(sb, "Locality Id: ", localityId);
-			appendOptional(sb, "Post Code Id: ", postcodeId);
-			appendOptional(sb, "Property Id: ", propertyId);
-			appendOptional(sb, "State Id: ", stateId);
-			appendOptional(sb, "Street Id: ", streetId);
-			appendOptional(sb, "Suggestion: ", suggestion);
-			appendOptional(sb, "Suggestion Type: ", suggestionType);
-			appendOptional(sb, "Territorial Authority Id: ", territorialAuthorityId);
+			Utils.appendOptional(sb, "Council Area Id: ", councilAreaId);
+			Utils.appendOptional(sb, "Country Id: ", countryId);
+			Utils.appendOptional(sb, "Body Corporate: ", isBodyCorporate);
+			Utils.appendOptional(sb, "Unit: ", isUnit);
+			Utils.appendOptional(sb, "Locality Id: ", localityId);
+			Utils.appendOptional(sb, "Post Code Id: ", postcodeId);
+			Utils.appendOptional(sb, "Property Id: ", propertyId);
+			Utils.appendOptional(sb, "State Id: ", stateId);
+			Utils.appendOptional(sb, "Street Id: ", streetId);
+			Utils.appendOptional(sb, "Suggestion: ", suggestion);
+			Utils.appendOptional(sb, "Suggestion Type: ", suggestionType);
+			Utils.appendOptional(sb, "Territorial Authority Id: ", territorialAuthorityId);
 
 			return sb.toString();
 		}
