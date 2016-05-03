@@ -22,6 +22,11 @@ public class WebController {
 		this.searchService = searchService;
 	}
 	
+	@RequestMapping(value="/", method=RequestMethod.GET)
+	public String home() {
+		return "redirect:/propertySearch";
+	}
+	
 	@RequestMapping(value="/propertySearch", method=RequestMethod.GET)
 	public String showPropertySearch(Map<String, Object> model) {
 		model.put("test", "value");

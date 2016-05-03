@@ -12,13 +12,47 @@
 		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
 		<script type="text/javascript">
 			$(document).ready(function() {
+				preFillFrom();
+				
 				$("#mainForm").submit(function(){
 					setSuggestionTypes();
-					setIncludes();
 				});
 			});
 			
+			function preFillFrom() {
+				// Pre fill the form with details from the model if present
+				var includeUnits = "${includeUnits}";
+				var includeBodyCorporates = "${includeBodyCorporates}";
+				var suggestionTypes = "${suggestionTypes}";
+				
+				<c:if test="${not empty query}">
+					// Prevent JavaScript injection by using c:out which will uuencode the value
+					$("#query").val("<c:out value='${query}'/>");
+				</c:if>
+				
+				if ((includeUnits == "true") || (includeUnits == "false")) {
+					$("#includeUnits").val(includeUnits);
+				}
+				
+				if ((includeBodyCorporates == "true") || (includeBodyCorporates == "false")) {
+					$("#includeBodyCorporates").val(includeBodyCorporates);
+				}
+				
+				// Comma seperated list with the IDs of the checkboxes
+				var suggestionTypesArray = suggestionTypes.split(/\s*,\s*/);
+				if (suggestionTypes != "") {
+					for (suggestion in suggestionTypesArray) {
+						$("#" + suggestionTypesArray[suggestion]).attr("checked", true);
+					}
+				}
+				else {
+					// Not set, so use defaults
+					$("#address, #street, #locality").attr("checked", true);
+				}
+			}
+			
 			function setSuggestionTypes() {
+				// Create a comma seperated list of the ids of the suggestion type checkboxes
 				var types = "";
 				$(".suggestionTypes:checked").each(function(index, value){
 					if (types != "") {
@@ -29,15 +63,8 @@
 					}
 				});
 				
+				// Store the comma seperated list in the hidden input
 				$("#suggestionTypes").val(types);
-			}
-			
-			function setIncludes() {
-				$(".include").each(function(index, value) {
-					if (value.is(":checked")) {
-						$("#" + value.id).val();
-					}
-				});
 			}
 		</script>
 	</head>
@@ -47,14 +74,14 @@
 			<table>
 				<tr>
 					<td>Query</td>
-					<td><input type="text" name="query" value="${query}" placeholder="2903" required/></td>
+					<td><input type="text" name="query" id="query" placeholder="2903" required/></td>
 				</tr>
 				<tr>
 					<td>Types</td>
 					<td>
-						<input type="checkbox" class="suggestionTypes" id="address" checked>Address
-						<input type="checkbox" class="suggestionTypes" id="street" checked>Street
-						<input type="checkbox" class="suggestionTypes" id="locality" checked>Locality
+						<input type="checkbox" class="suggestionTypes" id="address">Address
+						<input type="checkbox" class="suggestionTypes" id="street">Street
+						<input type="checkbox" class="suggestionTypes" id="locality">Locality
 						<input type="checkbox" class="suggestionTypes" id="postcode">Post Code
 						<input type="checkbox" class="suggestionTypes" id="territorialAuthority">Territorial Authority
 						<input type="checkbox" class="suggestionTypes" id="councilArea">Council Area
@@ -65,12 +92,12 @@
 				</tr>
 				<tr>
 					<td>Limit</td>
-					<td><input type="number" name="limit" min="0" max="100"/></td>
+					<td><input type="number" name="limit" min="0" max="100" value="${limit}"/></td>
 				</tr>
 				<tr>
 					<td>Include Units</td>
 					<td>
-						<select name="includeUnits">
+						<select name="includeUnits" id="includeUnits">
 							<option value="true" default>true</option>
 							<option value="false">false</option>
 						</select>
@@ -79,7 +106,7 @@
 				<tr>
 					<td>Include Body Corporates</td>
 					<td>
-						<select name="includeBodyCorporates">
+						<select name="includeBodyCorporates" id="includeBodyCorporates">
 							<option value="true" default>true</option>
 							<option value="false">false</option>
 						</select>
