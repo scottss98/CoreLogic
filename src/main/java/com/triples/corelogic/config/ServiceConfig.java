@@ -10,18 +10,23 @@ public abstract class ServiceConfig {
 	public String getMethod() {
 		return method;
 	}
+	
 	public void setMethod(String method) {
 		this.method = method;
 	}
+	
 	public String getHost() {
 		return host;
 	}
+	
 	public void setHost(String host) {
 		this.host = host;
 	}
+	
 	public String getBase_uri() {
 		return base_uri;
 	}
+	
 	public void setBase_uri(String base_uri) {
 		this.base_uri = base_uri;
 	}

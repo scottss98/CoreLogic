@@ -26,11 +26,12 @@ public class TokenRequest extends RestTemplate {
 					        .build(false)
 					        .toUri();
 	}
+	
 	public TokenRequest(String method, String host, String baseURI, String client_id, String client_secret) throws URISyntaxException {
 		this(UriComponentsBuilder.newInstance()
-							.scheme(method)
-					        .host(host)
-					        .path(baseURI), 
+								 .scheme(method)
+								 .host(host)
+								 .path(baseURI), 
 			 client_id, 
 			 client_secret);
 	}
@@ -40,7 +41,7 @@ public class TokenRequest extends RestTemplate {
 	}
 	
 	public TokenResponse getToken() {
-		log.info("URL: " + finalURI.toString());
+		log.debug("URL: {}", finalURI);
 		return getForObject(finalURI, TokenResponse.class);
 	}
 }

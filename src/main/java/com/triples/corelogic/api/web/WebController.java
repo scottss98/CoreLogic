@@ -60,7 +60,7 @@ public class WebController {
 		
 		return "PropertyDetail";
 	}
-/*
+	
 	@RequestMapping(value="/postCode", method=RequestMethod.GET)
 	public String postcodeDetails(@RequestParam(required=true,  value="id") Integer postCodeId,
 								  Map<String, Object> model) {
@@ -69,5 +69,4 @@ public class WebController {
 		
 		return "PostCodeDetail";
 	}
-*/
 }

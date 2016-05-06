@@ -11,7 +11,7 @@ import com.triples.corelogic.AccessToken;
 import com.triples.corelogic.config.PropertyServiceConfig;
 
 public class PropertyRequest extends RestTemplate {
-	private static final Logger log = LoggerFactory.getLogger(SuggestionRequest.class);
+	private static final Logger log = LoggerFactory.getLogger(PropertyRequest.class);
 	private static final String version = "/v1";
 	private static final String relativeURI = "/property/";
 	

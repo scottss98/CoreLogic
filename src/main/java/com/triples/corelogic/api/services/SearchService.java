@@ -11,22 +11,18 @@ import com.triples.corelogic.api.PostCodeResponse;
 import com.triples.corelogic.config.SearchServiceConfig;
 
 @RestController
-public class SearchService {
-	private static final Logger log = LoggerFactory.getLogger(PropertyService.class);
-
-	private final SearchServiceConfig serviceConfig;
-	private AccessToken accessToken;
+public class SearchService extends ServiceBase {
+	private static final Logger log = LoggerFactory.getLogger(SearchService.class);
 
 	@Autowired
 	public SearchService(SearchServiceConfig serviceConfig, AccessToken accessToken) {
-		this.serviceConfig = serviceConfig;
-		this.accessToken = accessToken;
+		super(serviceConfig, accessToken);
 
-		log.info("Property Service Config: " + this.serviceConfig.toString());
+		log.debug("Search Service Config: {}", getServiceConfig());
 	}
 
 	public PostCodeResponse getPostCode(Integer postCodeId) {
-		PostCodeRequest request = new PostCodeRequest(accessToken, serviceConfig, postCodeId);
+		PostCodeRequest request = new PostCodeRequest(getAccessToken(), (SearchServiceConfig)getServiceConfig(), postCodeId);
 		PostCodeResponse response = request.getPostCodeResponse();
 		if (response != null) {
 			return response;

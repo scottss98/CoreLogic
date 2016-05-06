@@ -3,8 +3,6 @@ package com.triples.corelogic.api.services;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,18 +16,14 @@ import com.triples.corelogic.api.SuggestionResponse;
 import com.triples.corelogic.config.PropertyServiceConfig;
 
 @RestController
-public class PropertyService {
+public class PropertyService extends ServiceBase {
 	private static final Logger log = LoggerFactory.getLogger(PropertyService.class);
-
-	private final PropertyServiceConfig serviceConfig;
-	private AccessToken accessToken;
 
 	@Autowired
 	public PropertyService(PropertyServiceConfig serviceConfig, AccessToken accessToken) {
-		this.serviceConfig = serviceConfig;
-		this.accessToken = accessToken;
+		super(serviceConfig, accessToken);
 
-		log.info("Property Service Config: " + this.serviceConfig.toString());
+		log.debug("Property Service Config: {}", getServiceConfig());
 	}
 
 	@RequestMapping(value = "/property")
@@ -39,7 +33,8 @@ public class PropertyService {
 			@RequestParam(required = false, value = "includeUnits") Boolean includeUnits,
 			@RequestParam(required = false, value = "includeBodyCorporates") Boolean includeBodyCorporates,
 			@RequestParam(required = false, value = "returnSuggestion") String returnSuggestion) {
-		SuggestionResponse response = getPropertySuggestions(query, suggestionTypes, limit, includeUnits, includeBodyCorporates, returnSuggestion);
+		SuggestionResponse response = getPropertySuggestions(query, suggestionTypes, limit, includeUnits,
+				includeBodyCorporates, returnSuggestion);
 		if (response != null) {
 			return response.toString();
 		} else {
@@ -48,35 +43,20 @@ public class PropertyService {
 	}
 
 	public Property getProperty(Integer propertyId) {
-		PropertyRequest request = new PropertyRequest(accessToken, serviceConfig, propertyId);
+		PropertyRequest request = new PropertyRequest(getAccessToken(), (PropertyServiceConfig) getServiceConfig(),
+				propertyId);
 		PropertyResponse response = request.getProperty();
 		if (response != null) {
 			return response.getProperty();
-		}
-		else {
+		} else {
 			return null;
 		}
 	}
 
 	public SuggestionResponse getPropertySuggestions(String query, String suggestionTypes, Integer limit,
 			Boolean includeUnits, Boolean includeBodyCorporates, String returnSuggestion) {
-		SuggestionRequest request = new SuggestionRequest(accessToken, serviceConfig, query);
-		if (suggestionTypes != null) {
-			request.setSuggestionTypes(suggestionTypes);
-		}
-		if (limit != null) {
-			request.setLimit(limit);
-		}
-		if (includeUnits != null) {
-			request.setIncludeUnits(includeUnits);
-		}
-		if (includeBodyCorporates != null) {
-			request.setIncludeBodyCorporates(includeBodyCorporates);
-		}
-		if (returnSuggestion != null) {
-			request.setReturnSuggestion(returnSuggestion);
-		}
-
+		SuggestionRequest request = new SuggestionRequest(getAccessToken(), (PropertyServiceConfig) getServiceConfig(),
+				query, suggestionTypes, limit, includeUnits, includeBodyCorporates, returnSuggestion);
 		return request.getSuggestion();
 	}
 }

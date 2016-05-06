@@ -8,12 +8,11 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.triples.corelogic.AccessToken;
-import com.triples.corelogic.config.PropertyServiceConfig;
 import com.triples.corelogic.config.SearchServiceConfig;
 
 public class PostCodeRequest extends RestTemplate {
 	private static final Logger log = LoggerFactory.getLogger(SuggestionRequest.class);
-	private static final String relativeURI = "/au/property/postcode";
+	private static final String relativeURI = "/au/property/postcode/";
 	
 	private UriComponentsBuilder uriBuilder;
 	private URI finalURI;

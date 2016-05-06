@@ -14,11 +14,11 @@ public class SuggestionRequest extends RestTemplate {
 	private static final Logger log = LoggerFactory.getLogger(SuggestionRequest.class);
 	private static final String version = "/v1";
 	private static final String relativeURI = "/suggest.json";
-	
+
 	private UriComponentsBuilder uriBuilder;
 	private URI finalURI;
 	private AccessToken accessToken;
-	
+
 	// Parameters
 	private String query;
 	private String suggestionTypes;
@@ -30,43 +30,49 @@ public class SuggestionRequest extends RestTemplate {
 	private SuggestionRequest(UriComponentsBuilder uriBuilder) {
 		this.uriBuilder = uriBuilder.path(version).path(relativeURI);
 	}
-	
+
 	public SuggestionRequest(AccessToken accessToken, PropertyServiceConfig serviceConfig, String query) {
 		this(serviceConfig.getUriBuilder());
 		this.accessToken = accessToken;
 		this.query = query;
 	}
-	
+
+	public SuggestionRequest(AccessToken accessToken, PropertyServiceConfig serviceConfig, String query,
+			String suggestionTypes, Integer limit, Boolean includeUnits, Boolean includeBodyCorporates,
+			String returnSuggestion) {
+		this(serviceConfig.getUriBuilder());
+		this.accessToken = accessToken;
+		this.query = query;
+	}
+
 	public SuggestionResponse getSuggestion() {
 		URI uri = getURI();
 		log.info("URL: " + uri.toString());
 		return getForObject(uri, SuggestionResponse.class);
 	}
-	
+
 	private URI getURI() {
 		if (finalURI == null) {
-			uriBuilder
-				.queryParam("access_token", accessToken.toString())
-				.queryParam("q", query);
-			
+			uriBuilder.queryParam("access_token", accessToken.toString()).queryParam("q", query);
+
 			if (suggestionTypes != null) {
-				uriBuilder.queryParam("suggestionTypes", suggestionTypes);	
+				uriBuilder.queryParam("suggestionTypes", suggestionTypes);
 			}
 			if (limit != null) {
-				uriBuilder.queryParam("limit", limit);	
+				uriBuilder.queryParam("limit", limit);
 			}
 			if (includeUnits != null) {
-				uriBuilder.queryParam("includeUnits", includeUnits);	
+				uriBuilder.queryParam("includeUnits", includeUnits);
 			}
 			if (returnSuggestion != null) {
-				uriBuilder.queryParam("returnSuggestion", returnSuggestion);	
+				uriBuilder.queryParam("returnSuggestion", returnSuggestion);
 			}
 			finalURI = uriBuilder.build(false).toUri();
 		}
-		
+
 		return finalURI;
 	}
-	
+
 	public String getQuery() {
 		return query;
 	}
