@@ -6,48 +6,48 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PostCodeResponse {
-	private List<PropertySearchResource> content;
-	private List<Link> links;
+	private List<PropertySearchResource> _embedded;
+	private List<Link> _links;
 	//private Page page;
 	
 	public PostCodeResponse() {
 	}
 	
-	public PostCodeResponse(List<PropertySearchResource> content, List<Link> links) {
-		this.content = content;
-		this.links = links;
+	public PostCodeResponse(List<PropertySearchResource> _embedded, List<Link> _links) {
+		this._embedded = _embedded;
+		this._links = _links;
 	}
 
-	public List<PropertySearchResource> getContent() {
-		return content;
+	protected List<PropertySearchResource> get_embedded() {
+		return _embedded;
 	}
 
-	public void setContent(List<PropertySearchResource> content) {
-		this.content = content;
+	protected void set_embedded(List<PropertySearchResource> _embedded) {
+		this._embedded = _embedded;
 	}
 
-	public List<Link> getLinks() {
-		return links;
+	protected List<Link> get_links() {
+		return _links;
 	}
 
-	public void setLinks(List<Link> links) {
-		this.links = links;
+	protected void set_links(List<Link> _links) {
+		this._links = _links;
 	}
 
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		if ((content != null) && !content.isEmpty()) {
+		if ((_embedded != null) && !_embedded.isEmpty()) {
 			sb.append("content: {");
-			for (PropertySearchResource propertySearchResource : content) {
+			for (PropertySearchResource propertySearchResource : _embedded) {
 				sb.append("[ ").append(propertySearchResource.toString()).append(" ], ");
 			}
 			sb.append("}, ");
 		}
 
-		if ((links != null) && !links.isEmpty()) {
+		if ((_links != null) && !_links.isEmpty()) {
 			sb.append("links: {");
-			for (Link link : links) {
+			for (Link link : _links) {
 				sb.append("[ ").append(link.toString()).append(" ], ");
 			}
 			sb.append("}, ");
@@ -58,23 +58,23 @@ public class PostCodeResponse {
 	}
 	
 	public static class PropertySearchResource {
-		private List<Link> links;
+		private List<Link> _links;
 		private PropertySummary propertySummary;
 		
 		public PropertySearchResource() {
 		}
 
-		public PropertySearchResource(List<Link> links, PropertySummary propertySummary) {
-			this.links = links;
+		public PropertySearchResource(List<Link> _links, PropertySummary propertySummary) {
+			this._links = _links;
 			this.propertySummary = propertySummary;
 		}
 
-		public List<Link> getLinks() {
-			return links;
+		public List<Link> get_links() {
+			return _links;
 		}
 
-		public void setLinks(List<Link> links) {
-			this.links = links;
+		public void set_links(List<Link> _links) {
+			this._links = _links;
 		}
 
 		public PropertySummary getPropertySummary() {
@@ -89,9 +89,9 @@ public class PostCodeResponse {
 		public String toString() {
 			StringBuilder sb = new StringBuilder();
 			
-			if ((links != null) && !links.isEmpty()) {
+			if ((_links != null) && !_links.isEmpty()) {
 				sb.append("links: {");
-				for (Link link : links) {
+				for (Link link : _links) {
 					sb.append("[ ").append(link.toString()).append(" ], ");
 				}
 				sb.append("}, ");
