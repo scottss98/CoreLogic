@@ -10,6 +10,8 @@ import com.triples.corelogic.api.PostCodeRequest;
 import com.triples.corelogic.api.PostCodeResponse;
 import com.triples.corelogic.config.SearchServiceConfig;
 
+import io.swagger.model.PagedResourcesOfPropertySearchResource;
+
 @RestController
 public class SearchService extends ServiceBase {
 	private static final Logger log = LoggerFactory.getLogger(SearchService.class);
@@ -21,9 +23,9 @@ public class SearchService extends ServiceBase {
 		log.debug("Search Service Config: {}", getServiceConfig());
 	}
 
-	public PostCodeResponse getPostCode(Integer postCodeId) {
+	public PagedResourcesOfPropertySearchResource getPostCode(Integer postCodeId) {
 		PostCodeRequest request = new PostCodeRequest(getAccessToken(), (SearchServiceConfig)getServiceConfig(), postCodeId);
-		PostCodeResponse response = request.getPostCodeResponse();
+		PagedResourcesOfPropertySearchResource response = request.getPostCodeResponse();
 		if (response != null) {
 			return response;
 		}

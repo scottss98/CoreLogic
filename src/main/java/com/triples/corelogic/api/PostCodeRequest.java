@@ -10,6 +10,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.triples.corelogic.AccessToken;
 import com.triples.corelogic.config.SearchServiceConfig;
 
+import io.swagger.model.PagedResourcesOfPropertySearchResource;
+
 public class PostCodeRequest extends RestTemplate {
 	private static final Logger log = LoggerFactory.getLogger(SuggestionRequest.class);
 	private static final String relativeURI = "/au/property/postcode/";
@@ -31,10 +33,10 @@ public class PostCodeRequest extends RestTemplate {
 		this.postCodeId = postCodeId;
 	}
 	
-	public PostCodeResponse getPostCodeResponse() {
+	public PagedResourcesOfPropertySearchResource getPostCodeResponse() {
 		URI uri = getURI();
 		log.info("URL: " + uri.toString());
-		return getForObject(uri, PostCodeResponse.class);
+		return getForObject(uri, PagedResourcesOfPropertySearchResource.class);
 	}
 	
 	private URI getURI() {

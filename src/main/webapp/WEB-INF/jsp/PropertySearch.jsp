@@ -149,7 +149,7 @@
 					<td>${suggestion.isBodyCorporate}</td>
 					<td>${suggestion.isUnit}</td>
 					<td>${suggestion.localityId}</td>
-					<td>${suggestion.postcodeId}</td>
+					<td><a href="/postCode?id=${suggestion.postcodeId}">${suggestion.postcodeId}</a></td>
 					<td><a href="/property?id=${suggestion.propertyId}">${suggestion.propertyId}</a></td>
 					<td>${suggestion.stateId}</td>
 					<td>${suggestion.streetId}</td>

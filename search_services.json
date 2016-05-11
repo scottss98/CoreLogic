@@ -1,0 +1,3508 @@
+swagger: '2.0'
+info:
+  description: >-
+    Search services allow you to search for records of interest.  Search
+    services will include the ability to search for specific properties,
+    streets, localities (suburbs) and more.  Search services typically return a
+    sorted list that includes summary data per record type and are typically
+    intended to empower summary views of information or support further detailed
+    data service requests.
+  version: Version 1
+  title: Search Services
+  contact: {}
+  license:
+    name: ' '
+host: search-sandbox-api.corelogic.asia
+basePath: /search
+tags:
+  - name: property-last-sale-search-controller
+    description: Property Search - Last Sale
+  - name: property-radius-search-controller
+    description: Search by Radius Service
+  - name: otm-for-rent-search-controller
+    description: Property Search - OTM For Rent
+  - name: otm-for-sale-search-controller
+    description: Property Search - OTM For Sale
+  - name: otm-for-sale-radius-search-controller
+    description: Search by Radius Service - OTM For Sale
+  - name: property-search-controller
+    description: Property Search Service
+  - name: address-match-controller
+    description: Address Matcher Service
+  - name: property-last-sale-radius-search-controller
+    description: Search by Radius Service - Last Sale
+  - name: otm-for-rent-radius-search-controller
+    description: Search by Radius Service - OTM For Rent
+schemes:
+  - https
+paths:
+  /au/matcher/address:
+    get:
+      tags:
+        - address-match-controller
+      summary: Address Matcher
+      description: >-
+        The CoreLogic Address Matcher service allows a single address string to
+        be matched with a valid property that exists within the CoreLogic
+        database. This provides a simple way for you to locate a property for
+        use in subsequent calls to the API. This is only available to locate
+        properties in Australia.For more details on the matching rules and
+        types, please see the [Address Matcher guide](/address_matcher).
+      operationId: Address Matcher
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: clientName
+          in: query
+          description: >-
+            A string that can be passed to indicate the name of the client
+            requesting the match. Maximum 100 characters will be accepted;
+            anything longer will be truncated.
+          required: false
+          type: string
+        - name: matchProfileId
+          in: query
+          description: >-
+            The matching profile that is used to determine the rules for
+            identifying the match result. This will default to matchProfileId 1
+            when excluded from the request.
+          required: false
+          type: integer
+          format: int32
+        - name: q
+          in: query
+          description: >-
+            The full address string that is passed to locate a match.  The
+            string will be modified by data cleansing to improve match rates and
+            the response will indicate if  the string was modified - see
+            updateIndicator.  The maximum number of characters that can be
+            passed is 1000. 
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/AddressMatchResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  /au/property/geo/radius:
+    get:
+      tags:
+        - property-radius-search-controller
+      summary: Search by Radius
+      description: >-
+        The Search by Radius operation allows users to retrieve a list of
+        properties that surround a central geographical point (latitude,
+        longitude). The user can filter by various basic attributes and will be
+        returned a sorted list that includes summary data for each property
+        record. The default sort of the results is ascending by the property's
+        distance from the center point.
+      operationId: Search by Radius
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: sort
+          in: query
+          description: >-
+            Sort the results by these attributes and suffix with a comma and the
+            sort direction (asc=ascending, desc=descending); multiple sorts can
+            be applied by passing additional 'sort' parameters. For example,
+            following the syntax
+            &sort={attribute1},{direction}&sort={attribute2},{direction}...If no
+            sort direction is provided after the attribute, then it will be
+            treated as ascending order. Basic sort attributes are: address
+            (default), beds, baths, carSpaces, landArea. For the other sort
+            attributes available for this service please see the Implementation
+            Notes above. Example: beds,desc
+          required: false
+          type: string
+        - name: size
+          in: query
+          description: >-
+            Used to specify the max number of records returned in the response
+            (aka: page size) and will default to 20 if not specified. Maximum
+            value accepted is 20 and any higher value passed will result in an
+            invalid requestExample: 15
+          required: false
+          type: integer
+          format: int32
+        - name: page
+          in: query
+          description: >-
+            Indicates the page number to begin on. When excluded, it will
+            default to the first page (e.g.: page=0). Example: 4
+          required: false
+          type: integer
+          format: int32
+        - name: baths
+          in: query
+          description: >-
+            Number of bathrooms search filter. The filter can be passed as a
+            single exact value or as a range of values.  Excluding the min or
+            max of a range will search to the min or max of the data set
+            respectively. Example values: 4 = single exact match filter; 3-6 =
+            range filter filter; 3- = range filter fetching 3 or more
+            bathrooms. 
+          required: false
+          type: string
+        - name: beds
+          in: query
+          description: >-
+            Number of bedrooms search filter. The filter can be passed as a
+            single exact value or as a range of values; see baths filter for
+            behaviour.Example values: 4 = single exact match filter; 3-6 = range
+            filter filter; 3- = range filter fetching 3 or more bedrooms. 
+          required: false
+          type: string
+        - name: carSpaces
+          in: query
+          description: >-
+            Number of car spaces search filter. The filter can be passed as a
+            single exact value or as a range of values; see baths filter for
+            behaviour.Example values: 4 = single exact match filter; 3-6 = range
+            filter filter; 3- = range filter fetching 3 or more car spaces. 
+          required: false
+          type: string
+        - name: landArea
+          in: query
+          description: >-
+            Filter results based off property's land area, where values passed
+            are in metres squared (m2). The filter can be passed as a single
+            exact value or as a range of values; see baths filter for
+            behaviour.Example values: 300 = exact match filter; 0-300 = zero to
+            300m2 inclusive; 300-600 = 300m2 to 600m2 inclusive; 300- = 300m2
+            and above; -300 = zero to 300m2 inclusive. 
+          required: false
+          type: string
+        - name: pTypes
+          in: query
+          description: >-
+            Property type filter. Can include one or many values, comma
+            separated and invalid values will be ignored. When excluded, it will
+            default to all property types. Available values: 'UNIT', 'FLATS',
+            'COMMERCIAL', 'HOUSE', 'LAND', 'BUSINESS', 'OTHER', 'COMMUNITY',
+            'FARM'. 
+          required: false
+          type: string
+        - name: lat
+          in: query
+          description: >-
+            The latitude coordinate of the central point to conduct the radius
+            search. This is mandatory.
+          required: true
+          type: number
+          format: double
+        - name: lon
+          in: query
+          description: >-
+            The longitude coordinate of the central point to conduct the radius
+            search. This is mandatory.
+          required: true
+          type: number
+          format: double
+        - name: radius
+          in: query
+          description: >-
+            The radius, in kilometres, used to perform the search around the
+            latitude and longitude provided. This is mandatory and accepts
+            values up to a maximum of 100.
+          required: true
+          type: number
+          format: double
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/PagedResourcesOfPropertyRadiusSearchResource'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  /au/property/geo/radius/lastSale:
+    get:
+      tags:
+        - property-last-sale-radius-search-controller
+      summary: Search by Radius - Last Sale
+      description: >-
+        Geo Radius Search by Status extends on the basic Geo Radius Search by
+        allowing users to retrieve a list of properties based off their last
+        sale date that surround a central geographical point (latitude,
+        longitude). The user can filter and sort by the common attributes along
+        with the specific sale-related ones (price, date, and source) and will
+        be returned a sorted list that includes the data specific to the
+        property's last sale in addition to the basic property info.  The
+        default sort of the results is ascending by the property's distance from
+        the center point.
+      operationId: Search by Radius - Last Sale
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: sort
+          in: query
+          description: >-
+            Sort the results by these attributes and suffix with a comma and the
+            sort direction (asc=ascending, desc=descending); multiple sorts can
+            be applied by passing additional 'sort' parameters. For example,
+            following the syntax
+            &sort={attribute1},{direction}&sort={attribute2},{direction}...If no
+            sort direction is provided after the attribute, then it will be
+            treated as ascending order. Basic sort attributes are: address
+            (default), beds, baths, carSpaces, landArea. For the other sort
+            attributes available for this service please see the Implementation
+            Notes above. Example: beds,desc
+          required: false
+          type: string
+        - name: size
+          in: query
+          description: >-
+            Used to specify the max number of records returned in the response
+            (aka: page size) and will default to 20 if not specified. Maximum
+            value accepted is 20 and any higher value passed will result in an
+            invalid requestExample: 15
+          required: false
+          type: integer
+          format: int32
+        - name: page
+          in: query
+          description: >-
+            Indicates the page number to begin on. When excluded, it will
+            default to the first page (e.g.: page=0). Example: 4
+          required: false
+          type: integer
+          format: int32
+        - name: baths
+          in: query
+          description: >-
+            Number of bathrooms search filter. The filter can be passed as a
+            single exact value or as a range of values.  Excluding the min or
+            max of a range will search to the min or max of the data set
+            respectively. Example values: 4 = single exact match filter; 3-6 =
+            range filter filter; 3- = range filter fetching 3 or more
+            bathrooms. 
+          required: false
+          type: string
+        - name: beds
+          in: query
+          description: >-
+            Number of bedrooms search filter. The filter can be passed as a
+            single exact value or as a range of values; see baths filter for
+            behaviour.Example values: 4 = single exact match filter; 3-6 = range
+            filter filter; 3- = range filter fetching 3 or more bedrooms. 
+          required: false
+          type: string
+        - name: carSpaces
+          in: query
+          description: >-
+            Number of car spaces search filter. The filter can be passed as a
+            single exact value or as a range of values; see baths filter for
+            behaviour.Example values: 4 = single exact match filter; 3-6 = range
+            filter filter; 3- = range filter fetching 3 or more car spaces. 
+          required: false
+          type: string
+        - name: landArea
+          in: query
+          description: >-
+            Filter results based off property's land area, where values passed
+            are in metres squared (m2). The filter can be passed as a single
+            exact value or as a range of values; see baths filter for
+            behaviour.Example values: 300 = exact match filter; 0-300 = zero to
+            300m2 inclusive; 300-600 = 300m2 to 600m2 inclusive; 300- = 300m2
+            and above; -300 = zero to 300m2 inclusive. 
+          required: false
+          type: string
+        - name: pTypes
+          in: query
+          description: >-
+            Property type filter. Can include one or many values, comma
+            separated and invalid values will be ignored. When excluded, it will
+            default to all property types. Available values: 'UNIT', 'FLATS',
+            'COMMERCIAL', 'HOUSE', 'LAND', 'BUSINESS', 'OTHER', 'COMMUNITY',
+            'FARM'. 
+          required: false
+          type: string
+        - name: date
+          in: query
+          description: >-
+            The date of the property's latest advertisement, as recorded by
+            CoreLogic. This needs to be input in the format YYYYMMDD (ISO 8601
+            format without the hyphens).For example, 20151201-20151231 will
+            search for properties that have a latest advertisement date from Dec
+            1, 2015 to Dec 31, 2015, inclusive.Example Values: 20160101 = single
+            exact match filter; 20160101-20160110 = range filter; 20160101- =
+            Jan 1, 2016 to today; -20160101 = everything on or before Jan 1,
+            2016.
+          required: false
+          type: string
+        - name: price
+          in: query
+          description: >-
+            Filter on the price of the For Sale advertisement, expressed as a
+            range.For example, 515000-550000 will search for current ads where
+            the latest listing price is from $515,000 to $550,000 inclusive.
+            Example Values: 400000 = single exact match filter; 300000-600000 =
+            range filter; 500000- = $500,000 and above.
+          required: false
+          type: string
+        - name: source
+          in: query
+          description: >-
+            Refine the results by the source of the sale as provided by Valuer
+            General (VG), Agent Advised (AA) or either (ALL).  When excluded, it
+            will return the latest sale, regardless of the source. Accepted
+            values are: VG: only return sales advised by Valuer General; AA:
+            only return sales advised by an agent; ALL: return either.
+          required: false
+          type: string
+          enum:
+            - AA
+            - VG
+            - ALL
+        - name: lat
+          in: query
+          description: >-
+            The latitude coordinate of the central point to conduct the radius
+            search. This is mandatory.
+          required: true
+          type: number
+          format: double
+        - name: lon
+          in: query
+          description: >-
+            The longitude coordinate of the central point to conduct the radius
+            search. This is mandatory.
+          required: true
+          type: number
+          format: double
+        - name: radius
+          in: query
+          description: >-
+            The radius, in kilometres, used to perform the search around the
+            latitude and longitude provided. This is mandatory and accepts
+            values up to a maximum of 100.
+          required: true
+          type: number
+          format: double
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/PagedResourcesOfLastSaleRadiusSearchResource'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  /au/property/geo/radius/otmForRent:
+    get:
+      tags:
+        - otm-for-rent-radius-search-controller
+      summary: Search by Radius - OTM For Rent
+      description: >-
+        Search by Radius - OTM For Rent extends on the basic Search Radius
+        operation by allowing users to retrieve a list of properties that are on
+        the market (OTM) for rent that surround a central geographical point
+        (latitude, longitude). The user can filter and sort by the common
+        attributes along with the OTM-related ones (price, date, period) and
+        will be returned a sorted list that includes the OTM-related data
+        specific to the property's campaign in addition to the basic property
+        info. The default sort of the results is ascending by the property's
+        distance from the center point.
+      operationId: Search by Radius - OTM For Rent
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: sort
+          in: query
+          description: >-
+            Sort the results by these attributes and suffix with a comma and the
+            sort direction (asc=ascending, desc=descending); multiple sorts can
+            be applied by passing additional 'sort' parameters. For example,
+            following the syntax
+            &sort={attribute1},{direction}&sort={attribute2},{direction}...If no
+            sort direction is provided after the attribute, then it will be
+            treated as ascending order. Basic sort attributes are: address
+            (default), beds, baths, carSpaces, landArea. For the other sort
+            attributes available for this service please see the Implementation
+            Notes above. Example: beds,desc
+          required: false
+          type: string
+        - name: size
+          in: query
+          description: >-
+            Used to specify the max number of records returned in the response
+            (aka: page size) and will default to 20 if not specified. Maximum
+            value accepted is 20 and any higher value passed will result in an
+            invalid requestExample: 15
+          required: false
+          type: integer
+          format: int32
+        - name: page
+          in: query
+          description: >-
+            Indicates the page number to begin on. When excluded, it will
+            default to the first page (e.g.: page=0). Example: 4
+          required: false
+          type: integer
+          format: int32
+        - name: baths
+          in: query
+          description: >-
+            Number of bathrooms search filter. The filter can be passed as a
+            single exact value or as a range of values.  Excluding the min or
+            max of a range will search to the min or max of the data set
+            respectively. Example values: 4 = single exact match filter; 3-6 =
+            range filter filter; 3- = range filter fetching 3 or more
+            bathrooms. 
+          required: false
+          type: string
+        - name: beds
+          in: query
+          description: >-
+            Number of bedrooms search filter. The filter can be passed as a
+            single exact value or as a range of values; see baths filter for
+            behaviour.Example values: 4 = single exact match filter; 3-6 = range
+            filter filter; 3- = range filter fetching 3 or more bedrooms. 
+          required: false
+          type: string
+        - name: carSpaces
+          in: query
+          description: >-
+            Number of car spaces search filter. The filter can be passed as a
+            single exact value or as a range of values; see baths filter for
+            behaviour.Example values: 4 = single exact match filter; 3-6 = range
+            filter filter; 3- = range filter fetching 3 or more car spaces. 
+          required: false
+          type: string
+        - name: landArea
+          in: query
+          description: >-
+            Filter results based off property's land area, where values passed
+            are in metres squared (m2). The filter can be passed as a single
+            exact value or as a range of values; see baths filter for
+            behaviour.Example values: 300 = exact match filter; 0-300 = zero to
+            300m2 inclusive; 300-600 = 300m2 to 600m2 inclusive; 300- = 300m2
+            and above; -300 = zero to 300m2 inclusive. 
+          required: false
+          type: string
+        - name: pTypes
+          in: query
+          description: >-
+            Property type filter. Can include one or many values, comma
+            separated and invalid values will be ignored. When excluded, it will
+            default to all property types. Available values: 'UNIT', 'FLATS',
+            'COMMERCIAL', 'HOUSE', 'LAND', 'BUSINESS', 'OTHER', 'COMMUNITY',
+            'FARM'. 
+          required: false
+          type: string
+        - name: date
+          in: query
+          description: >-
+            The date of the property's latest advertisement, as recorded by
+            CoreLogic. This needs to be input in the format YYYYMMDD (ISO 8601
+            format without the hyphens).For example, 20151201-20151231 will
+            search for properties that have a latest advertisement date from Dec
+            1, 2015 to Dec 31, 2015, inclusive.Example Values: 20160101 = single
+            exact match filter; 20160101-20160110 = range filter; 20160101- =
+            Jan 1, 2016 to today; -20160101 = everything on or before Jan 1,
+            2016.
+          required: false
+          type: string
+        - name: price
+          in: query
+          description: >-
+            Filter on the price of the For Sale advertisement, expressed as a
+            range.For example, 515000-550000 will search for current ads where
+            the latest listing price is from $515,000 to $550,000 inclusive.
+            Example Values: 400000 = single exact match filter; 300000-600000 =
+            range filter; 500000- = $500,000 and above.
+          required: false
+          type: string
+        - name: period
+          in: query
+          description: >-
+            Filter on the period for the rental term. Accepted values are: 'D' =
+            daily, 'W' = weekly (most common), 'F' = fortnightly, 'M' = monthly,
+            'Q' = quarterly, 'A' = annual
+          required: false
+          type: string
+          enum:
+            - D
+            - F
+            - W
+            - M
+            - Q
+            - A
+        - name: lat
+          in: query
+          description: >-
+            The latitude coordinate of the central point to conduct the radius
+            search. This is mandatory.
+          required: true
+          type: number
+          format: double
+        - name: lon
+          in: query
+          description: >-
+            The longitude coordinate of the central point to conduct the radius
+            search. This is mandatory.
+          required: true
+          type: number
+          format: double
+        - name: radius
+          in: query
+          description: >-
+            The radius, in kilometres, used to perform the search around the
+            latitude and longitude provided. This is mandatory and accepts
+            values up to a maximum of 100.
+          required: true
+          type: number
+          format: double
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/PagedResourcesOfOtmForRentRadiusSearchResource'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  /au/property/geo/radius/otmForSale:
+    get:
+      tags:
+        - otm-for-sale-radius-search-controller
+      summary: Search by Radius - OTM For Sale
+      description: >-
+        Search by Radius - OTM For Sale extends on the basic Search Radius
+        operation by allowing users to retrieve a list of properties that are on
+        the market (OTM) for sale that surround a central geographical point
+        (latitude, longitude). The user can filter and sort by the common
+        attributes along with the OTM-related ones (price, date, method) and
+        will be returned a sorted list that includes the OTM-related data
+        specific to the property's campaign in addition to the basic property
+        info. The default sort of the results is ascending by the property's
+        distance from the center point.
+      operationId: Search by Radius - OTM For Sale
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: sort
+          in: query
+          description: >-
+            Sort the results by these attributes and suffix with a comma and the
+            sort direction (asc=ascending, desc=descending); multiple sorts can
+            be applied by passing additional 'sort' parameters. For example,
+            following the syntax
+            &sort={attribute1},{direction}&sort={attribute2},{direction}...If no
+            sort direction is provided after the attribute, then it will be
+            treated as ascending order. Basic sort attributes are: address
+            (default), beds, baths, carSpaces, landArea. For the other sort
+            attributes available for this service please see the Implementation
+            Notes above. Example: beds,desc
+          required: false
+          type: string
+        - name: size
+          in: query
+          description: >-
+            Used to specify the max number of records returned in the response
+            (aka: page size) and will default to 20 if not specified. Maximum
+            value accepted is 20 and any higher value passed will result in an
+            invalid requestExample: 15
+          required: false
+          type: integer
+          format: int32
+        - name: page
+          in: query
+          description: >-
+            Indicates the page number to begin on. When excluded, it will
+            default to the first page (e.g.: page=0). Example: 4
+          required: false
+          type: integer
+          format: int32
+        - name: baths
+          in: query
+          description: >-
+            Number of bathrooms search filter. The filter can be passed as a
+            single exact value or as a range of values.  Excluding the min or
+            max of a range will search to the min or max of the data set
+            respectively. Example values: 4 = single exact match filter; 3-6 =
+            range filter filter; 3- = range filter fetching 3 or more
+            bathrooms. 
+          required: false
+          type: string
+        - name: beds
+          in: query
+          description: >-
+            Number of bedrooms search filter. The filter can be passed as a
+            single exact value or as a range of values; see baths filter for
+            behaviour.Example values: 4 = single exact match filter; 3-6 = range
+            filter filter; 3- = range filter fetching 3 or more bedrooms. 
+          required: false
+          type: string
+        - name: carSpaces
+          in: query
+          description: >-
+            Number of car spaces search filter. The filter can be passed as a
+            single exact value or as a range of values; see baths filter for
+            behaviour.Example values: 4 = single exact match filter; 3-6 = range
+            filter filter; 3- = range filter fetching 3 or more car spaces. 
+          required: false
+          type: string
+        - name: landArea
+          in: query
+          description: >-
+            Filter results based off property's land area, where values passed
+            are in metres squared (m2). The filter can be passed as a single
+            exact value or as a range of values; see baths filter for
+            behaviour.Example values: 300 = exact match filter; 0-300 = zero to
+            300m2 inclusive; 300-600 = 300m2 to 600m2 inclusive; 300- = 300m2
+            and above; -300 = zero to 300m2 inclusive. 
+          required: false
+          type: string
+        - name: pTypes
+          in: query
+          description: >-
+            Property type filter. Can include one or many values, comma
+            separated and invalid values will be ignored. When excluded, it will
+            default to all property types. Available values: 'UNIT', 'FLATS',
+            'COMMERCIAL', 'HOUSE', 'LAND', 'BUSINESS', 'OTHER', 'COMMUNITY',
+            'FARM'. 
+          required: false
+          type: string
+        - name: date
+          in: query
+          description: >-
+            The date of the property's latest advertisement, as recorded by
+            CoreLogic. This needs to be input in the format YYYYMMDD (ISO 8601
+            format without the hyphens).For example, 20151201-20151231 will
+            search for properties that have a latest advertisement date from Dec
+            1, 2015 to Dec 31, 2015, inclusive.Example Values: 20160101 = single
+            exact match filter; 20160101-20160110 = range filter; 20160101- =
+            Jan 1, 2016 to today; -20160101 = everything on or before Jan 1,
+            2016.
+          required: false
+          type: string
+        - name: price
+          in: query
+          description: >-
+            Filter on the price of the For Sale advertisement, expressed as a
+            range.For example, 515000-550000 will search for current ads where
+            the latest listing price is from $515,000 to $550,000 inclusive.
+            Example Values: 400000 = single exact match filter; 300000-600000 =
+            range filter; 500000- = $500,000 and above.
+          required: false
+          type: string
+        - name: method
+          in: query
+          description: >-
+            The listing method of the property's latest for sale advertisement.
+            Can include one or many values, comma separated and invalid values
+            will be ignored. When excluded, it will default to all listing
+            methods.Accepted values: S = Normal Sale; A = Auction; T = Tender; M
+            = Mortgagee Sale; MA = Mortgagee Auction; O = Offers
+          required: false
+          type: string
+        - name: activeCampaign
+          in: query
+          description: >-
+            Filter on the status of the OTM For Sale campaign. Although a
+            property can be identified as being OTM for sale, there are
+            scenarios when ads may still be displayed despite the property being
+            sold.This flag will help identify those campaigns which are truely
+            active (no sales events against the campaign).This is passed as
+            either 'true' or 'false'.When excluded, this will return all
+            properties, regardless if the campaign is active or not.
+          required: false
+          type: boolean
+        - name: lat
+          in: query
+          description: >-
+            The latitude coordinate of the central point to conduct the radius
+            search. This is mandatory.
+          required: true
+          type: number
+          format: double
+        - name: lon
+          in: query
+          description: >-
+            The longitude coordinate of the central point to conduct the radius
+            search. This is mandatory.
+          required: true
+          type: number
+          format: double
+        - name: radius
+          in: query
+          description: >-
+            The radius, in kilometres, used to perform the search around the
+            latitude and longitude provided. This is mandatory and accepts
+            values up to a maximum of 100.
+          required: true
+          type: number
+          format: double
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/PagedResourcesOfOtmForSaleRadiusSearchResource'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  '/au/property/locality/{localityId}':
+    get:
+      tags:
+        - property-search-controller
+      summary: Search by Locality (suburb)
+      description: >-
+        The Search by Locality operation allows users to retrieve a list of
+        properties for a specific locality (suburb). The user can filter by
+        various basic attributes and will be returned a sorted list that
+        includes basic summary data for each property record. This is intended
+        to empower further detailed data service requests.The default sort of
+        the results is by the property's address.
+      operationId: Search by Locality (suburb)
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: localityId
+          in: path
+          description: The unique internal identifier for the locality (suburb).
+          required: true
+          type: integer
+          format: int64
+        - name: sort
+          in: query
+          description: >-
+            Sort the results by these attributes and suffix with a comma and the
+            sort direction (asc=ascending, desc=descending); multiple sorts can
+            be applied by passing additional 'sort' parameters. For example,
+            following the syntax
+            &sort={attribute1},{direction}&sort={attribute2},{direction}...If no
+            sort direction is provided after the attribute, then it will be
+            treated as ascending order. Basic sort attributes are: address
+            (default), beds, baths, carSpaces, landArea. For the other sort
+            attributes available for this service please see the Implementation
+            Notes above. Example: beds,desc
+          required: false
+          type: string
+        - name: size
+          in: query
+          description: >-
+            Used to specify the max number of records returned in the response
+            (aka: page size) and will default to 20 if not specified. Maximum
+            value accepted is 20 and any higher value passed will result in an
+            invalid requestExample: 15
+          required: false
+          type: integer
+          format: int32
+        - name: page
+          in: query
+          description: >-
+            Indicates the page number to begin on. When excluded, it will
+            default to the first page (e.g.: page=0). Example: 4
+          required: false
+          type: integer
+          format: int32
+        - name: baths
+          in: query
+          description: >-
+            Number of bathrooms search filter. The filter can be passed as a
+            single exact value or as a range of values.  Excluding the min or
+            max of a range will search to the min or max of the data set
+            respectively. Example values: 4 = single exact match filter; 3-6 =
+            range filter filter; 3- = range filter fetching 3 or more
+            bathrooms. 
+          required: false
+          type: string
+        - name: beds
+          in: query
+          description: >-
+            Number of bedrooms search filter. The filter can be passed as a
+            single exact value or as a range of values; see baths filter for
+            behaviour.Example values: 4 = single exact match filter; 3-6 = range
+            filter filter; 3- = range filter fetching 3 or more bedrooms. 
+          required: false
+          type: string
+        - name: carSpaces
+          in: query
+          description: >-
+            Number of car spaces search filter. The filter can be passed as a
+            single exact value or as a range of values; see baths filter for
+            behaviour.Example values: 4 = single exact match filter; 3-6 = range
+            filter filter; 3- = range filter fetching 3 or more car spaces. 
+          required: false
+          type: string
+        - name: landArea
+          in: query
+          description: >-
+            Filter results based off property's land area, where values passed
+            are in metres squared (m2). The filter can be passed as a single
+            exact value or as a range of values; see baths filter for
+            behaviour.Example values: 300 = exact match filter; 0-300 = zero to
+            300m2 inclusive; 300-600 = 300m2 to 600m2 inclusive; 300- = 300m2
+            and above; -300 = zero to 300m2 inclusive. 
+          required: false
+          type: string
+        - name: pTypes
+          in: query
+          description: >-
+            Property type filter. Can include one or many values, comma
+            separated and invalid values will be ignored. When excluded, it will
+            default to all property types. Available values: 'UNIT', 'FLATS',
+            'COMMERCIAL', 'HOUSE', 'LAND', 'BUSINESS', 'OTHER', 'COMMUNITY',
+            'FARM'. 
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/PagedResourcesOfPropertySearchResource'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  '/au/property/locality/{localityId}/lastSale':
+    get:
+      tags:
+        - property-last-sale-search-controller
+      summary: Search Last Sale by Locality (suburb)
+      description: >-
+        Search Location by Status extends on the basic Search Location operation
+        by allowing users to retrieve a list of properties for a specific
+        locality (suburb) based off their last sale. The user can filter and
+        sort by the basic attributes along with specific sale-related ones
+        (price, date and source) and be returned a sorted list that includes the
+        data specific to the property's last sale in addition to the basic
+        property info.The default sort for this service will be ascending by
+        property's address.
+      operationId: Search Last Sale by Locality (suburb)
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: localityId
+          in: path
+          description: The unique internal identifier for the locality.
+          required: true
+          type: integer
+          format: int64
+        - name: sort
+          in: query
+          description: >-
+            Sort the results by these attributes and suffix with a comma and the
+            sort direction (asc=ascending, desc=descending); multiple sorts can
+            be applied by passing additional 'sort' parameters. For example,
+            following the syntax
+            &sort={attribute1},{direction}&sort={attribute2},{direction}...If no
+            sort direction is provided after the attribute, then it will be
+            treated as ascending order. Basic sort attributes are: address
+            (default), beds, baths, carSpaces, landArea. For the other sort
+            attributes available for this service please see the Implementation
+            Notes above. Example: beds,desc
+          required: false
+          type: string
+        - name: size
+          in: query
+          description: >-
+            Used to specify the max number of records returned in the response
+            (aka: page size) and will default to 20 if not specified. Maximum
+            value accepted is 20 and any higher value passed will result in an
+            invalid requestExample: 15
+          required: false
+          type: integer
+          format: int32
+        - name: page
+          in: query
+          description: >-
+            Indicates the page number to begin on. When excluded, it will
+            default to the first page (e.g.: page=0). Example: 4
+          required: false
+          type: integer
+          format: int32
+        - name: baths
+          in: query
+          description: >-
+            Number of bathrooms search filter. The filter can be passed as a
+            single exact value or as a range of values.  Excluding the min or
+            max of a range will search to the min or max of the data set
+            respectively. Example values: 4 = single exact match filter; 3-6 =
+            range filter filter; 3- = range filter fetching 3 or more
+            bathrooms. 
+          required: false
+          type: string
+        - name: beds
+          in: query
+          description: >-
+            Number of bedrooms search filter. The filter can be passed as a
+            single exact value or as a range of values; see baths filter for
+            behaviour.Example values: 4 = single exact match filter; 3-6 = range
+            filter filter; 3- = range filter fetching 3 or more bedrooms. 
+          required: false
+          type: string
+        - name: carSpaces
+          in: query
+          description: >-
+            Number of car spaces search filter. The filter can be passed as a
+            single exact value or as a range of values; see baths filter for
+            behaviour.Example values: 4 = single exact match filter; 3-6 = range
+            filter filter; 3- = range filter fetching 3 or more car spaces. 
+          required: false
+          type: string
+        - name: date
+          in: query
+          description: >-
+            The date of the property's latest advertisement, as recorded by
+            CoreLogic. This needs to be input in the format YYYYMMDD (ISO 8601
+            format without the hyphens).For example, 20151201-20151231 will
+            search for properties that have a latest advertisement date from Dec
+            1, 2015 to Dec 31, 2015, inclusive.Example Values: 20160101 = single
+            exact match filter; 20160101-20160110 = range filter; 20160101- =
+            Jan 1, 2016 to today; -20160101 = everything on or before Jan 1,
+            2016.
+          required: false
+          type: string
+        - name: landArea
+          in: query
+          description: >-
+            Filter results based off property's land area, where values passed
+            are in metres squared (m2). The filter can be passed as a single
+            exact value or as a range of values; see baths filter for
+            behaviour.Example values: 300 = exact match filter; 0-300 = zero to
+            300m2 inclusive; 300-600 = 300m2 to 600m2 inclusive; 300- = 300m2
+            and above; -300 = zero to 300m2 inclusive. 
+          required: false
+          type: string
+        - name: pTypes
+          in: query
+          description: >-
+            Property type filter. Can include one or many values, comma
+            separated and invalid values will be ignored. When excluded, it will
+            default to all property types. Available values: 'UNIT', 'FLATS',
+            'COMMERCIAL', 'HOUSE', 'LAND', 'BUSINESS', 'OTHER', 'COMMUNITY',
+            'FARM'. 
+          required: false
+          type: string
+        - name: price
+          in: query
+          description: >-
+            Filter on the price of the For Sale advertisement, expressed as a
+            range.For example, 515000-550000 will search for current ads where
+            the latest listing price is from $515,000 to $550,000 inclusive.
+            Example Values: 400000 = single exact match filter; 300000-600000 =
+            range filter; 500000- = $500,000 and above.
+          required: false
+          type: string
+        - name: source
+          in: query
+          description: >-
+            Refine the results by the source of the sale as provided by Valuer
+            General (VG), Agent Advised (AA) or either (ALL).  When excluded, it
+            will return the latest sale, regardless of the source. Accepted
+            values are: VG: only return sales advised by Valuer General; AA:
+            only return sales advised by an agent; ALL: return either.
+          required: false
+          type: string
+          enum:
+            - AA
+            - VG
+            - ALL
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/PagedResourcesOfLastSaleSearchResource'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  '/au/property/locality/{localityId}/otmForRent':
+    get:
+      tags:
+        - otm-for-rent-search-controller
+      summary: Search OTM For Rent by Locality (suburb)
+      description: >-
+        Property Search OTM For Rent by Locality extends on the basic Search
+        Location operation by allowing users to retrieve a list of properties
+        for a specific locality (suburb) that are on the market (OTM) for Rent.
+        The user can filter and sort by the basic attributes along with specific
+        OTM-related ones (price, date, period) and be returned a sorted list
+        that includes the OTM-related data specific to the property's campaign
+        in addition to the basic property info. The default sort of the results
+        is by address.
+      operationId: Search OTM For Rent by Locality (suburb)
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: localityId
+          in: path
+          description: The unique internal identifier for the locality.
+          required: true
+          type: integer
+          format: int64
+        - name: sort
+          in: query
+          description: >-
+            Sort the results by these attributes and suffix with a comma and the
+            sort direction (asc=ascending, desc=descending); multiple sorts can
+            be applied by passing additional 'sort' parameters. For example,
+            following the syntax
+            &sort={attribute1},{direction}&sort={attribute2},{direction}...If no
+            sort direction is provided after the attribute, then it will be
+            treated as ascending order. Basic sort attributes are: address
+            (default), beds, baths, carSpaces, landArea. For the other sort
+            attributes available for this service please see the Implementation
+            Notes above. Example: beds,desc
+          required: false
+          type: string
+        - name: size
+          in: query
+          description: >-
+            Used to specify the max number of records returned in the response
+            (aka: page size) and will default to 20 if not specified. Maximum
+            value accepted is 20 and any higher value passed will result in an
+            invalid requestExample: 15
+          required: false
+          type: integer
+          format: int32
+        - name: page
+          in: query
+          description: >-
+            Indicates the page number to begin on. When excluded, it will
+            default to the first page (e.g.: page=0). Example: 4
+          required: false
+          type: integer
+          format: int32
+        - name: baths
+          in: query
+          description: >-
+            Number of bathrooms search filter. The filter can be passed as a
+            single exact value or as a range of values.  Excluding the min or
+            max of a range will search to the min or max of the data set
+            respectively. Example values: 4 = single exact match filter; 3-6 =
+            range filter filter; 3- = range filter fetching 3 or more
+            bathrooms. 
+          required: false
+          type: string
+        - name: beds
+          in: query
+          description: >-
+            Number of bedrooms search filter. The filter can be passed as a
+            single exact value or as a range of values; see baths filter for
+            behaviour.Example values: 4 = single exact match filter; 3-6 = range
+            filter filter; 3- = range filter fetching 3 or more bedrooms. 
+          required: false
+          type: string
+        - name: carSpaces
+          in: query
+          description: >-
+            Number of car spaces search filter. The filter can be passed as a
+            single exact value or as a range of values; see baths filter for
+            behaviour.Example values: 4 = single exact match filter; 3-6 = range
+            filter filter; 3- = range filter fetching 3 or more car spaces. 
+          required: false
+          type: string
+        - name: landArea
+          in: query
+          description: >-
+            Filter results based off property's land area, where values passed
+            are in metres squared (m2). The filter can be passed as a single
+            exact value or as a range of values; see baths filter for
+            behaviour.Example values: 300 = exact match filter; 0-300 = zero to
+            300m2 inclusive; 300-600 = 300m2 to 600m2 inclusive; 300- = 300m2
+            and above; -300 = zero to 300m2 inclusive. 
+          required: false
+          type: string
+        - name: pTypes
+          in: query
+          description: >-
+            Property type filter. Can include one or many values, comma
+            separated and invalid values will be ignored. When excluded, it will
+            default to all property types. Available values: 'UNIT', 'FLATS',
+            'COMMERCIAL', 'HOUSE', 'LAND', 'BUSINESS', 'OTHER', 'COMMUNITY',
+            'FARM'. 
+          required: false
+          type: string
+        - name: date
+          in: query
+          description: >-
+            The date of the property's latest advertisement, as recorded by
+            CoreLogic. This needs to be input in the format YYYYMMDD (ISO 8601
+            format without the hyphens).For example, 20151201-20151231 will
+            search for properties that have a latest advertisement date from Dec
+            1, 2015 to Dec 31, 2015, inclusive.Example Values: 20160101 = single
+            exact match filter; 20160101-20160110 = range filter; 20160101- =
+            Jan 1, 2016 to today; -20160101 = everything on or before Jan 1,
+            2016.
+          required: false
+          type: string
+        - name: price
+          in: query
+          description: >-
+            Filter on the price of the For Sale advertisement, expressed as a
+            range.For example, 515000-550000 will search for current ads where
+            the latest listing price is from $515,000 to $550,000 inclusive.
+            Example Values: 400000 = single exact match filter; 300000-600000 =
+            range filter; 500000- = $500,000 and above.
+          required: false
+          type: string
+        - name: period
+          in: query
+          description: >-
+            Filter on the period for the rental term. Accepted values are: 'D' =
+            daily, 'W' = weekly (most common), 'F' = fortnightly, 'M' = monthly,
+            'Q' = quarterly, 'A' = annual
+          required: false
+          type: string
+          enum:
+            - D
+            - F
+            - W
+            - M
+            - Q
+            - A
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/PagedResourcesOfOtmForRentSearchResource'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  '/au/property/locality/{localityId}/otmForSale':
+    get:
+      tags:
+        - otm-for-sale-search-controller
+      summary: Search OTM For Sale by Locality (suburb)
+      description: >-
+        Property Search OTM For Sale by Locality extends on the basic Search
+        Location operation by allowing users to retrieve a list of properties
+        for a specific locality (suburb) that are on the market (OTM) for sale.
+        The user can filter and sort by the basic attributes along with specific
+        OTM-related ones (price, date, method) and be returned a sorted list
+        that includes the OTM-related data specific to the property's campaign
+        in addition to the basic property info. The default sort of the results
+        is by address.
+      operationId: Search OTM For Sale by Locality (suburb)
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: localityId
+          in: path
+          description: The unique internal identifier for the locality.
+          required: true
+          type: integer
+          format: int64
+        - name: sort
+          in: query
+          description: >-
+            Sort the results by these attributes and suffix with a comma and the
+            sort direction (asc=ascending, desc=descending); multiple sorts can
+            be applied by passing additional 'sort' parameters. For example,
+            following the syntax
+            &sort={attribute1},{direction}&sort={attribute2},{direction}...If no
+            sort direction is provided after the attribute, then it will be
+            treated as ascending order. Basic sort attributes are: address
+            (default), beds, baths, carSpaces, landArea. For the other sort
+            attributes available for this service please see the Implementation
+            Notes above. Example: beds,desc
+          required: false
+          type: string
+        - name: size
+          in: query
+          description: >-
+            Used to specify the max number of records returned in the response
+            (aka: page size) and will default to 20 if not specified. Maximum
+            value accepted is 20 and any higher value passed will result in an
+            invalid requestExample: 15
+          required: false
+          type: integer
+          format: int32
+        - name: page
+          in: query
+          description: >-
+            Indicates the page number to begin on. When excluded, it will
+            default to the first page (e.g.: page=0). Example: 4
+          required: false
+          type: integer
+          format: int32
+        - name: baths
+          in: query
+          description: >-
+            Number of bathrooms search filter. The filter can be passed as a
+            single exact value or as a range of values.  Excluding the min or
+            max of a range will search to the min or max of the data set
+            respectively. Example values: 4 = single exact match filter; 3-6 =
+            range filter filter; 3- = range filter fetching 3 or more
+            bathrooms. 
+          required: false
+          type: string
+        - name: beds
+          in: query
+          description: >-
+            Number of bedrooms search filter. The filter can be passed as a
+            single exact value or as a range of values; see baths filter for
+            behaviour.Example values: 4 = single exact match filter; 3-6 = range
+            filter filter; 3- = range filter fetching 3 or more bedrooms. 
+          required: false
+          type: string
+        - name: carSpaces
+          in: query
+          description: >-
+            Number of car spaces search filter. The filter can be passed as a
+            single exact value or as a range of values; see baths filter for
+            behaviour.Example values: 4 = single exact match filter; 3-6 = range
+            filter filter; 3- = range filter fetching 3 or more car spaces. 
+          required: false
+          type: string
+        - name: landArea
+          in: query
+          description: >-
+            Filter results based off property's land area, where values passed
+            are in metres squared (m2). The filter can be passed as a single
+            exact value or as a range of values; see baths filter for
+            behaviour.Example values: 300 = exact match filter; 0-300 = zero to
+            300m2 inclusive; 300-600 = 300m2 to 600m2 inclusive; 300- = 300m2
+            and above; -300 = zero to 300m2 inclusive. 
+          required: false
+          type: string
+        - name: pTypes
+          in: query
+          description: >-
+            Property type filter. Can include one or many values, comma
+            separated and invalid values will be ignored. When excluded, it will
+            default to all property types. Available values: 'UNIT', 'FLATS',
+            'COMMERCIAL', 'HOUSE', 'LAND', 'BUSINESS', 'OTHER', 'COMMUNITY',
+            'FARM'. 
+          required: false
+          type: string
+        - name: date
+          in: query
+          description: >-
+            The date of the property's latest advertisement, as recorded by
+            CoreLogic. This needs to be input in the format YYYYMMDD (ISO 8601
+            format without the hyphens).For example, 20151201-20151231 will
+            search for properties that have a latest advertisement date from Dec
+            1, 2015 to Dec 31, 2015, inclusive.Example Values: 20160101 = single
+            exact match filter; 20160101-20160110 = range filter; 20160101- =
+            Jan 1, 2016 to today; -20160101 = everything on or before Jan 1,
+            2016.
+          required: false
+          type: string
+        - name: price
+          in: query
+          description: >-
+            Filter on the price of the For Sale advertisement, expressed as a
+            range.For example, 515000-550000 will search for current ads where
+            the latest listing price is from $515,000 to $550,000 inclusive.
+            Example Values: 400000 = single exact match filter; 300000-600000 =
+            range filter; 500000- = $500,000 and above.
+          required: false
+          type: string
+        - name: method
+          in: query
+          description: >-
+            The listing method of the property's latest for sale advertisement.
+            Can include one or many values, comma separated and invalid values
+            will be ignored. When excluded, it will default to all listing
+            methods.Accepted values: S = Normal Sale; A = Auction; T = Tender; M
+            = Mortgagee Sale; MA = Mortgagee Auction; O = Offers
+          required: false
+          type: string
+        - name: activeCampaign
+          in: query
+          description: >-
+            Filter on the status of the OTM For Sale campaign. Although a
+            property can be identified as being OTM for sale, there are
+            scenarios when ads may still be displayed despite the property being
+            sold.This flag will help identify those campaigns which are truely
+            active (no sales events against the campaign).This is passed as
+            either 'true' or 'false'.When excluded, this will return all
+            properties, regardless if the campaign is active or not.
+          required: false
+          type: boolean
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/PagedResourcesOfOtmForSaleSearchResource'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  '/au/property/postcode/{postcodeId}':
+    get:
+      tags:
+        - property-search-controller
+      summary: Search by Postcode
+      description: >-
+        The Search by Postcode operation allows users to retrieve a list of
+        properties for a specific Postcode. The user can filter by various basic
+        attributes and will be returned a sorted list that includes basic
+        summary data for each property record. This is intended to empower
+        further detailed data service requests.The default sort of the results
+        is by the property's address.
+      operationId: Search by Postcode
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: postcodeId
+          in: path
+          description: The unique internal identifier for the postcode.
+          required: true
+          type: integer
+          format: int64
+        - name: sort
+          in: query
+          description: >-
+            Sort the results by these attributes and suffix with a comma and the
+            sort direction (asc=ascending, desc=descending); multiple sorts can
+            be applied by passing additional 'sort' parameters. For example,
+            following the syntax
+            &sort={attribute1},{direction}&sort={attribute2},{direction}...If no
+            sort direction is provided after the attribute, then it will be
+            treated as ascending order. Basic sort attributes are: address
+            (default), beds, baths, carSpaces, landArea. For the other sort
+            attributes available for this service please see the Implementation
+            Notes above. Example: beds,desc
+          required: false
+          type: string
+        - name: size
+          in: query
+          description: >-
+            Used to specify the max number of records returned in the response
+            (aka: page size) and will default to 20 if not specified. Maximum
+            value accepted is 20 and any higher value passed will result in an
+            invalid requestExample: 15
+          required: false
+          type: integer
+          format: int32
+        - name: page
+          in: query
+          description: >-
+            Indicates the page number to begin on. When excluded, it will
+            default to the first page (e.g.: page=0). Example: 4
+          required: false
+          type: integer
+          format: int32
+        - name: baths
+          in: query
+          description: >-
+            Number of bathrooms search filter. The filter can be passed as a
+            single exact value or as a range of values.  Excluding the min or
+            max of a range will search to the min or max of the data set
+            respectively. Example values: 4 = single exact match filter; 3-6 =
+            range filter filter; 3- = range filter fetching 3 or more
+            bathrooms. 
+          required: false
+          type: string
+        - name: beds
+          in: query
+          description: >-
+            Number of bedrooms search filter. The filter can be passed as a
+            single exact value or as a range of values; see baths filter for
+            behaviour.Example values: 4 = single exact match filter; 3-6 = range
+            filter filter; 3- = range filter fetching 3 or more bedrooms. 
+          required: false
+          type: string
+        - name: carSpaces
+          in: query
+          description: >-
+            Number of car spaces search filter. The filter can be passed as a
+            single exact value or as a range of values; see baths filter for
+            behaviour.Example values: 4 = single exact match filter; 3-6 = range
+            filter filter; 3- = range filter fetching 3 or more car spaces. 
+          required: false
+          type: string
+        - name: landArea
+          in: query
+          description: >-
+            Filter results based off property's land area, where values passed
+            are in metres squared (m2). The filter can be passed as a single
+            exact value or as a range of values; see baths filter for
+            behaviour.Example values: 300 = exact match filter; 0-300 = zero to
+            300m2 inclusive; 300-600 = 300m2 to 600m2 inclusive; 300- = 300m2
+            and above; -300 = zero to 300m2 inclusive. 
+          required: false
+          type: string
+        - name: pTypes
+          in: query
+          description: >-
+            Property type filter. Can include one or many values, comma
+            separated and invalid values will be ignored. When excluded, it will
+            default to all property types. Available values: 'UNIT', 'FLATS',
+            'COMMERCIAL', 'HOUSE', 'LAND', 'BUSINESS', 'OTHER', 'COMMUNITY',
+            'FARM'. 
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/PagedResourcesOfPropertySearchResource'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  '/au/property/postcode/{postcodeId}/lastSale':
+    get:
+      tags:
+        - property-last-sale-search-controller
+      summary: Search Last Sale by Postcode
+      description: >-
+        Search Postcode by Status extends on the basic Search Location operation
+        by allowing users to retrieve a list of properties for street in a
+        particular suburb based off their last sale. The user can filter and
+        sort by the basic attributes along with specific sale-related ones
+        (price, date and source) and be returned a sorted list that includes the
+        data specific to the property's last sale in addition to the basic
+        property info.The default sort for this service will be ascending by
+        property's address.
+      operationId: Search Last Sale by Postcode
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: postcodeId
+          in: path
+          description: The unique internal identifier for the postcode.
+          required: true
+          type: integer
+          format: int64
+        - name: sort
+          in: query
+          description: >-
+            Sort the results by these attributes and suffix with a comma and the
+            sort direction (asc=ascending, desc=descending); multiple sorts can
+            be applied by passing additional 'sort' parameters. For example,
+            following the syntax
+            &sort={attribute1},{direction}&sort={attribute2},{direction}...If no
+            sort direction is provided after the attribute, then it will be
+            treated as ascending order. Basic sort attributes are: address
+            (default), beds, baths, carSpaces, landArea. For the other sort
+            attributes available for this service please see the Implementation
+            Notes above. Example: beds,desc
+          required: false
+          type: string
+        - name: size
+          in: query
+          description: >-
+            Used to specify the max number of records returned in the response
+            (aka: page size) and will default to 20 if not specified. Maximum
+            value accepted is 20 and any higher value passed will result in an
+            invalid requestExample: 15
+          required: false
+          type: integer
+          format: int32
+        - name: page
+          in: query
+          description: >-
+            Indicates the page number to begin on. When excluded, it will
+            default to the first page (e.g.: page=0). Example: 4
+          required: false
+          type: integer
+          format: int32
+        - name: baths
+          in: query
+          description: >-
+            Number of bathrooms search filter. The filter can be passed as a
+            single exact value or as a range of values.  Excluding the min or
+            max of a range will search to the min or max of the data set
+            respectively. Example values: 4 = single exact match filter; 3-6 =
+            range filter filter; 3- = range filter fetching 3 or more
+            bathrooms. 
+          required: false
+          type: string
+        - name: beds
+          in: query
+          description: >-
+            Number of bedrooms search filter. The filter can be passed as a
+            single exact value or as a range of values; see baths filter for
+            behaviour.Example values: 4 = single exact match filter; 3-6 = range
+            filter filter; 3- = range filter fetching 3 or more bedrooms. 
+          required: false
+          type: string
+        - name: carSpaces
+          in: query
+          description: >-
+            Number of car spaces search filter. The filter can be passed as a
+            single exact value or as a range of values; see baths filter for
+            behaviour.Example values: 4 = single exact match filter; 3-6 = range
+            filter filter; 3- = range filter fetching 3 or more car spaces. 
+          required: false
+          type: string
+        - name: landArea
+          in: query
+          description: >-
+            Filter results based off property's land area, where values passed
+            are in metres squared (m2). The filter can be passed as a single
+            exact value or as a range of values; see baths filter for
+            behaviour.Example values: 300 = exact match filter; 0-300 = zero to
+            300m2 inclusive; 300-600 = 300m2 to 600m2 inclusive; 300- = 300m2
+            and above; -300 = zero to 300m2 inclusive. 
+          required: false
+          type: string
+        - name: pTypes
+          in: query
+          description: >-
+            Property type filter. Can include one or many values, comma
+            separated and invalid values will be ignored. When excluded, it will
+            default to all property types. Available values: 'UNIT', 'FLATS',
+            'COMMERCIAL', 'HOUSE', 'LAND', 'BUSINESS', 'OTHER', 'COMMUNITY',
+            'FARM'. 
+          required: false
+          type: string
+        - name: date
+          in: query
+          description: >-
+            The date of the property's latest advertisement, as recorded by
+            CoreLogic. This needs to be input in the format YYYYMMDD (ISO 8601
+            format without the hyphens).For example, 20151201-20151231 will
+            search for properties that have a latest advertisement date from Dec
+            1, 2015 to Dec 31, 2015, inclusive.Example Values: 20160101 = single
+            exact match filter; 20160101-20160110 = range filter; 20160101- =
+            Jan 1, 2016 to today; -20160101 = everything on or before Jan 1,
+            2016.
+          required: false
+          type: string
+        - name: price
+          in: query
+          description: >-
+            Filter on the price of the For Sale advertisement, expressed as a
+            range.For example, 515000-550000 will search for current ads where
+            the latest listing price is from $515,000 to $550,000 inclusive.
+            Example Values: 400000 = single exact match filter; 300000-600000 =
+            range filter; 500000- = $500,000 and above.
+          required: false
+          type: string
+        - name: source
+          in: query
+          description: >-
+            Refine the results by the source of the sale as provided by Valuer
+            General (VG), Agent Advised (AA) or either (ALL).  When excluded, it
+            will return the latest sale, regardless of the source. Accepted
+            values are: VG: only return sales advised by Valuer General; AA:
+            only return sales advised by an agent; ALL: return either.
+          required: false
+          type: string
+          enum:
+            - AA
+            - VG
+            - ALL
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/PagedResourcesOfLastSaleSearchResource'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  '/au/property/postcode/{postcodeId}/otmForRent':
+    get:
+      tags:
+        - otm-for-rent-search-controller
+      summary: Search OTM For Rent by Postcode
+      description: >-
+        Property Search OTM For Rent by Postcode extends on the basic Search
+        Location operation by allowing users to retrieve a list of properties
+        for a specific postcode that are on the market (OTM) for rent. The user
+        can filter and sort by the basic attributes along with specific
+        OTM-related ones (price, date, period) and be returned a sorted list
+        that includes the OTM-related data specific to the property's campaign
+        in addition to the basic property info. The default sort of the results
+        is by address.
+      operationId: Search OTM For Rent by Postcode
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: postcodeId
+          in: path
+          description: The unique internal identifier for the postcode.
+          required: true
+          type: integer
+          format: int64
+        - name: sort
+          in: query
+          description: >-
+            Sort the results by these attributes and suffix with a comma and the
+            sort direction (asc=ascending, desc=descending); multiple sorts can
+            be applied by passing additional 'sort' parameters. For example,
+            following the syntax
+            &sort={attribute1},{direction}&sort={attribute2},{direction}...If no
+            sort direction is provided after the attribute, then it will be
+            treated as ascending order. Basic sort attributes are: address
+            (default), beds, baths, carSpaces, landArea. For the other sort
+            attributes available for this service please see the Implementation
+            Notes above. Example: beds,desc
+          required: false
+          type: string
+        - name: size
+          in: query
+          description: >-
+            Used to specify the max number of records returned in the response
+            (aka: page size) and will default to 20 if not specified. Maximum
+            value accepted is 20 and any higher value passed will result in an
+            invalid requestExample: 15
+          required: false
+          type: integer
+          format: int32
+        - name: page
+          in: query
+          description: >-
+            Indicates the page number to begin on. When excluded, it will
+            default to the first page (e.g.: page=0). Example: 4
+          required: false
+          type: integer
+          format: int32
+        - name: baths
+          in: query
+          description: >-
+            Number of bathrooms search filter. The filter can be passed as a
+            single exact value or as a range of values.  Excluding the min or
+            max of a range will search to the min or max of the data set
+            respectively. Example values: 4 = single exact match filter; 3-6 =
+            range filter filter; 3- = range filter fetching 3 or more
+            bathrooms. 
+          required: false
+          type: string
+        - name: beds
+          in: query
+          description: >-
+            Number of bedrooms search filter. The filter can be passed as a
+            single exact value or as a range of values; see baths filter for
+            behaviour.Example values: 4 = single exact match filter; 3-6 = range
+            filter filter; 3- = range filter fetching 3 or more bedrooms. 
+          required: false
+          type: string
+        - name: carSpaces
+          in: query
+          description: >-
+            Number of car spaces search filter. The filter can be passed as a
+            single exact value or as a range of values; see baths filter for
+            behaviour.Example values: 4 = single exact match filter; 3-6 = range
+            filter filter; 3- = range filter fetching 3 or more car spaces. 
+          required: false
+          type: string
+        - name: landArea
+          in: query
+          description: >-
+            Filter results based off property's land area, where values passed
+            are in metres squared (m2). The filter can be passed as a single
+            exact value or as a range of values; see baths filter for
+            behaviour.Example values: 300 = exact match filter; 0-300 = zero to
+            300m2 inclusive; 300-600 = 300m2 to 600m2 inclusive; 300- = 300m2
+            and above; -300 = zero to 300m2 inclusive. 
+          required: false
+          type: string
+        - name: pTypes
+          in: query
+          description: >-
+            Property type filter. Can include one or many values, comma
+            separated and invalid values will be ignored. When excluded, it will
+            default to all property types. Available values: 'UNIT', 'FLATS',
+            'COMMERCIAL', 'HOUSE', 'LAND', 'BUSINESS', 'OTHER', 'COMMUNITY',
+            'FARM'. 
+          required: false
+          type: string
+        - name: date
+          in: query
+          description: >-
+            The date of the property's latest advertisement, as recorded by
+            CoreLogic. This needs to be input in the format YYYYMMDD (ISO 8601
+            format without the hyphens).For example, 20151201-20151231 will
+            search for properties that have a latest advertisement date from Dec
+            1, 2015 to Dec 31, 2015, inclusive.Example Values: 20160101 = single
+            exact match filter; 20160101-20160110 = range filter; 20160101- =
+            Jan 1, 2016 to today; -20160101 = everything on or before Jan 1,
+            2016.
+          required: false
+          type: string
+        - name: price
+          in: query
+          description: >-
+            Filter on the price of the For Sale advertisement, expressed as a
+            range.For example, 515000-550000 will search for current ads where
+            the latest listing price is from $515,000 to $550,000 inclusive.
+            Example Values: 400000 = single exact match filter; 300000-600000 =
+            range filter; 500000- = $500,000 and above.
+          required: false
+          type: string
+        - name: period
+          in: query
+          description: >-
+            Filter on the period for the rental term. Accepted values are: 'D' =
+            daily, 'W' = weekly (most common), 'F' = fortnightly, 'M' = monthly,
+            'Q' = quarterly, 'A' = annual
+          required: false
+          type: string
+          enum:
+            - D
+            - F
+            - W
+            - M
+            - Q
+            - A
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/PagedResourcesOfOtmForRentSearchResource'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  '/au/property/postcode/{postcodeId}/otmForSale':
+    get:
+      tags:
+        - otm-for-sale-search-controller
+      summary: Search OTM For Sale by Postcode
+      description: >-
+        Property Search OTM For Sale by Postcode extends on the basic Search
+        Location operation by allowing users to retrieve a list of properties
+        for a specific postcode that are on the market (OTM) for sale. The user
+        can filter and sort by the basic attributes along with specific
+        OTM-related ones (price, date, method) and be returned a sorted list
+        that includes the OTM-related data specific to the property's campaign
+        in addition to the basic property info. The default sort of the results
+        is by address.
+      operationId: Search OTM For Sale by Postcode
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: postcodeId
+          in: path
+          description: The unique internal identifier for the postcode.
+          required: true
+          type: integer
+          format: int64
+        - name: sort
+          in: query
+          description: >-
+            Sort the results by these attributes and suffix with a comma and the
+            sort direction (asc=ascending, desc=descending); multiple sorts can
+            be applied by passing additional 'sort' parameters. For example,
+            following the syntax
+            &sort={attribute1},{direction}&sort={attribute2},{direction}...If no
+            sort direction is provided after the attribute, then it will be
+            treated as ascending order. Basic sort attributes are: address
+            (default), beds, baths, carSpaces, landArea. For the other sort
+            attributes available for this service please see the Implementation
+            Notes above. Example: beds,desc
+          required: false
+          type: string
+        - name: size
+          in: query
+          description: >-
+            Used to specify the max number of records returned in the response
+            (aka: page size) and will default to 20 if not specified. Maximum
+            value accepted is 20 and any higher value passed will result in an
+            invalid requestExample: 15
+          required: false
+          type: integer
+          format: int32
+        - name: page
+          in: query
+          description: >-
+            Indicates the page number to begin on. When excluded, it will
+            default to the first page (e.g.: page=0). Example: 4
+          required: false
+          type: integer
+          format: int32
+        - name: baths
+          in: query
+          description: >-
+            Number of bathrooms search filter. The filter can be passed as a
+            single exact value or as a range of values.  Excluding the min or
+            max of a range will search to the min or max of the data set
+            respectively. Example values: 4 = single exact match filter; 3-6 =
+            range filter filter; 3- = range filter fetching 3 or more
+            bathrooms. 
+          required: false
+          type: string
+        - name: beds
+          in: query
+          description: >-
+            Number of bedrooms search filter. The filter can be passed as a
+            single exact value or as a range of values; see baths filter for
+            behaviour.Example values: 4 = single exact match filter; 3-6 = range
+            filter filter; 3- = range filter fetching 3 or more bedrooms. 
+          required: false
+          type: string
+        - name: carSpaces
+          in: query
+          description: >-
+            Number of car spaces search filter. The filter can be passed as a
+            single exact value or as a range of values; see baths filter for
+            behaviour.Example values: 4 = single exact match filter; 3-6 = range
+            filter filter; 3- = range filter fetching 3 or more car spaces. 
+          required: false
+          type: string
+        - name: landArea
+          in: query
+          description: >-
+            Filter results based off property's land area, where values passed
+            are in metres squared (m2). The filter can be passed as a single
+            exact value or as a range of values; see baths filter for
+            behaviour.Example values: 300 = exact match filter; 0-300 = zero to
+            300m2 inclusive; 300-600 = 300m2 to 600m2 inclusive; 300- = 300m2
+            and above; -300 = zero to 300m2 inclusive. 
+          required: false
+          type: string
+        - name: pTypes
+          in: query
+          description: >-
+            Property type filter. Can include one or many values, comma
+            separated and invalid values will be ignored. When excluded, it will
+            default to all property types. Available values: 'UNIT', 'FLATS',
+            'COMMERCIAL', 'HOUSE', 'LAND', 'BUSINESS', 'OTHER', 'COMMUNITY',
+            'FARM'. 
+          required: false
+          type: string
+        - name: date
+          in: query
+          description: >-
+            The date of the property's latest advertisement, as recorded by
+            CoreLogic. This needs to be input in the format YYYYMMDD (ISO 8601
+            format without the hyphens).For example, 20151201-20151231 will
+            search for properties that have a latest advertisement date from Dec
+            1, 2015 to Dec 31, 2015, inclusive.Example Values: 20160101 = single
+            exact match filter; 20160101-20160110 = range filter; 20160101- =
+            Jan 1, 2016 to today; -20160101 = everything on or before Jan 1,
+            2016.
+          required: false
+          type: string
+        - name: price
+          in: query
+          description: >-
+            Filter on the price of the For Sale advertisement, expressed as a
+            range.For example, 515000-550000 will search for current ads where
+            the latest listing price is from $515,000 to $550,000 inclusive.
+            Example Values: 400000 = single exact match filter; 300000-600000 =
+            range filter; 500000- = $500,000 and above.
+          required: false
+          type: string
+        - name: method
+          in: query
+          description: >-
+            The listing method of the property's latest for sale advertisement.
+            Can include one or many values, comma separated and invalid values
+            will be ignored. When excluded, it will default to all listing
+            methods.Accepted values: S = Normal Sale; A = Auction; T = Tender; M
+            = Mortgagee Sale; MA = Mortgagee Auction; O = Offers
+          required: false
+          type: string
+        - name: activeCampaign
+          in: query
+          description: >-
+            Filter on the status of the OTM For Sale campaign. Although a
+            property can be identified as being OTM for sale, there are
+            scenarios when ads may still be displayed despite the property being
+            sold.This flag will help identify those campaigns which are truely
+            active (no sales events against the campaign).This is passed as
+            either 'true' or 'false'.When excluded, this will return all
+            properties, regardless if the campaign is active or not.
+          required: false
+          type: boolean
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/PagedResourcesOfOtmForSaleSearchResource'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  '/au/property/street/{streetId}':
+    get:
+      tags:
+        - property-search-controller
+      summary: Search by Street
+      description: >-
+        The Search by Street operation allows users to retrieve a list of
+        properties for a Street in a particular suburb and postcode. The user
+        can filter by various basic attributes and will be returned a sorted
+        list that includes basic summary data for each property record. This is
+        intended to empower further detailed data service requests. The default
+        sort of the results is by the property's address.
+      operationId: Search by Street
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: streetId
+          in: path
+          description: The unique internal identifier for the street.
+          required: true
+          type: integer
+          format: int64
+        - name: sort
+          in: query
+          description: >-
+            Sort the results by these attributes and suffix with a comma and the
+            sort direction (asc=ascending, desc=descending); multiple sorts can
+            be applied by passing additional 'sort' parameters. For example,
+            following the syntax
+            &sort={attribute1},{direction}&sort={attribute2},{direction}...If no
+            sort direction is provided after the attribute, then it will be
+            treated as ascending order. Basic sort attributes are: address
+            (default), beds, baths, carSpaces, landArea. For the other sort
+            attributes available for this service please see the Implementation
+            Notes above. Example: beds,desc
+          required: false
+          type: string
+        - name: size
+          in: query
+          description: >-
+            Used to specify the max number of records returned in the response
+            (aka: page size) and will default to 20 if not specified. Maximum
+            value accepted is 20 and any higher value passed will result in an
+            invalid requestExample: 15
+          required: false
+          type: integer
+          format: int32
+        - name: page
+          in: query
+          description: >-
+            Indicates the page number to begin on. When excluded, it will
+            default to the first page (e.g.: page=0). Example: 4
+          required: false
+          type: integer
+          format: int32
+        - name: baths
+          in: query
+          description: >-
+            Number of bathrooms search filter. The filter can be passed as a
+            single exact value or as a range of values.  Excluding the min or
+            max of a range will search to the min or max of the data set
+            respectively. Example values: 4 = single exact match filter; 3-6 =
+            range filter filter; 3- = range filter fetching 3 or more
+            bathrooms. 
+          required: false
+          type: string
+        - name: beds
+          in: query
+          description: >-
+            Number of bedrooms search filter. The filter can be passed as a
+            single exact value or as a range of values; see baths filter for
+            behaviour.Example values: 4 = single exact match filter; 3-6 = range
+            filter filter; 3- = range filter fetching 3 or more bedrooms. 
+          required: false
+          type: string
+        - name: carSpaces
+          in: query
+          description: >-
+            Number of car spaces search filter. The filter can be passed as a
+            single exact value or as a range of values; see baths filter for
+            behaviour.Example values: 4 = single exact match filter; 3-6 = range
+            filter filter; 3- = range filter fetching 3 or more car spaces. 
+          required: false
+          type: string
+        - name: landArea
+          in: query
+          description: >-
+            Filter results based off property's land area, where values passed
+            are in metres squared (m2). The filter can be passed as a single
+            exact value or as a range of values; see baths filter for
+            behaviour.Example values: 300 = exact match filter; 0-300 = zero to
+            300m2 inclusive; 300-600 = 300m2 to 600m2 inclusive; 300- = 300m2
+            and above; -300 = zero to 300m2 inclusive. 
+          required: false
+          type: string
+        - name: pTypes
+          in: query
+          description: >-
+            Property type filter. Can include one or many values, comma
+            separated and invalid values will be ignored. When excluded, it will
+            default to all property types. Available values: 'UNIT', 'FLATS',
+            'COMMERCIAL', 'HOUSE', 'LAND', 'BUSINESS', 'OTHER', 'COMMUNITY',
+            'FARM'. 
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/PagedResourcesOfPropertySearchResource'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  '/au/property/street/{streetId}/lastSale':
+    get:
+      tags:
+        - property-last-sale-search-controller
+      summary: Search Last Sale by Street
+      description: >-
+        Search Street by Status extends on the basic Search Location operation
+        by allowing users to retrieve a list of properties for a specific
+        postcode based off their last sale. The user can filter and sort by the
+        basic attributes along with specific sale-related ones (price, date and
+        source) and be returned a sorted list that includes the data specific to
+        the property's last sale in addition to the basic property info.The
+        default sort for this service will be ascending by property's address.
+      operationId: Search Last Sale by Street
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: streetId
+          in: path
+          description: The unique internal identifier for the street.
+          required: true
+          type: integer
+          format: int64
+        - name: sort
+          in: query
+          description: >-
+            Sort the results by these attributes and suffix with a comma and the
+            sort direction (asc=ascending, desc=descending); multiple sorts can
+            be applied by passing additional 'sort' parameters. For example,
+            following the syntax
+            &sort={attribute1},{direction}&sort={attribute2},{direction}...If no
+            sort direction is provided after the attribute, then it will be
+            treated as ascending order. Basic sort attributes are: address
+            (default), beds, baths, carSpaces, landArea. For the other sort
+            attributes available for this service please see the Implementation
+            Notes above. Example: beds,desc
+          required: false
+          type: string
+        - name: size
+          in: query
+          description: >-
+            Used to specify the max number of records returned in the response
+            (aka: page size) and will default to 20 if not specified. Maximum
+            value accepted is 20 and any higher value passed will result in an
+            invalid requestExample: 15
+          required: false
+          type: integer
+          format: int32
+        - name: page
+          in: query
+          description: >-
+            Indicates the page number to begin on. When excluded, it will
+            default to the first page (e.g.: page=0). Example: 4
+          required: false
+          type: integer
+          format: int32
+        - name: baths
+          in: query
+          description: >-
+            Number of bathrooms search filter. The filter can be passed as a
+            single exact value or as a range of values.  Excluding the min or
+            max of a range will search to the min or max of the data set
+            respectively. Example values: 4 = single exact match filter; 3-6 =
+            range filter filter; 3- = range filter fetching 3 or more
+            bathrooms. 
+          required: false
+          type: string
+        - name: beds
+          in: query
+          description: >-
+            Number of bedrooms search filter. The filter can be passed as a
+            single exact value or as a range of values; see baths filter for
+            behaviour.Example values: 4 = single exact match filter; 3-6 = range
+            filter filter; 3- = range filter fetching 3 or more bedrooms. 
+          required: false
+          type: string
+        - name: carSpaces
+          in: query
+          description: >-
+            Number of car spaces search filter. The filter can be passed as a
+            single exact value or as a range of values; see baths filter for
+            behaviour.Example values: 4 = single exact match filter; 3-6 = range
+            filter filter; 3- = range filter fetching 3 or more car spaces. 
+          required: false
+          type: string
+        - name: date
+          in: query
+          description: >-
+            The date of the property's latest advertisement, as recorded by
+            CoreLogic. This needs to be input in the format YYYYMMDD (ISO 8601
+            format without the hyphens).For example, 20151201-20151231 will
+            search for properties that have a latest advertisement date from Dec
+            1, 2015 to Dec 31, 2015, inclusive.Example Values: 20160101 = single
+            exact match filter; 20160101-20160110 = range filter; 20160101- =
+            Jan 1, 2016 to today; -20160101 = everything on or before Jan 1,
+            2016.
+          required: false
+          type: string
+        - name: landArea
+          in: query
+          description: >-
+            Filter results based off property's land area, where values passed
+            are in metres squared (m2). The filter can be passed as a single
+            exact value or as a range of values; see baths filter for
+            behaviour.Example values: 300 = exact match filter; 0-300 = zero to
+            300m2 inclusive; 300-600 = 300m2 to 600m2 inclusive; 300- = 300m2
+            and above; -300 = zero to 300m2 inclusive. 
+          required: false
+          type: string
+        - name: pTypes
+          in: query
+          description: >-
+            Property type filter. Can include one or many values, comma
+            separated and invalid values will be ignored. When excluded, it will
+            default to all property types. Available values: 'UNIT', 'FLATS',
+            'COMMERCIAL', 'HOUSE', 'LAND', 'BUSINESS', 'OTHER', 'COMMUNITY',
+            'FARM'. 
+          required: false
+          type: string
+        - name: price
+          in: query
+          description: >-
+            Filter on the price of the For Sale advertisement, expressed as a
+            range.For example, 515000-550000 will search for current ads where
+            the latest listing price is from $515,000 to $550,000 inclusive.
+            Example Values: 400000 = single exact match filter; 300000-600000 =
+            range filter; 500000- = $500,000 and above.
+          required: false
+          type: string
+        - name: source
+          in: query
+          description: >-
+            Refine the results by the source of the sale as provided by Valuer
+            General (VG), Agent Advised (AA) or either (ALL).  When excluded, it
+            will return the latest sale, regardless of the source. Accepted
+            values are: VG: only return sales advised by Valuer General; AA:
+            only return sales advised by an agent; ALL: return either.
+          required: false
+          type: string
+          enum:
+            - AA
+            - VG
+            - ALL
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/PagedResourcesOfLastSaleSearchResource'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  '/au/property/street/{streetId}/otmForRent':
+    get:
+      tags:
+        - otm-for-rent-search-controller
+      summary: Search OTM For Rent by Street
+      description: >-
+        Property Search OTM For Rent by Street extends on the basic Search
+        Location operation by allowing users to retrieve a list of properties
+        for a street in a particular suburb and postcode that are on the market
+        (OTM) for rent. The user can filter and sort by the basic attributes
+        along with specific OTM-related ones (price, date, period) and be
+        returned a sorted list that includes the OTM-related data specific to
+        the property's campaign in addition to the basic property info. The
+        default sort of the results is by address.
+      operationId: Search OTM For Rent by Street
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: streetId
+          in: path
+          description: The unique internal identifier for the street.
+          required: true
+          type: integer
+          format: int64
+        - name: sort
+          in: query
+          description: >-
+            Sort the results by these attributes and suffix with a comma and the
+            sort direction (asc=ascending, desc=descending); multiple sorts can
+            be applied by passing additional 'sort' parameters. For example,
+            following the syntax
+            &sort={attribute1},{direction}&sort={attribute2},{direction}...If no
+            sort direction is provided after the attribute, then it will be
+            treated as ascending order. Basic sort attributes are: address
+            (default), beds, baths, carSpaces, landArea. For the other sort
+            attributes available for this service please see the Implementation
+            Notes above. Example: beds,desc
+          required: false
+          type: string
+        - name: size
+          in: query
+          description: >-
+            Used to specify the max number of records returned in the response
+            (aka: page size) and will default to 20 if not specified. Maximum
+            value accepted is 20 and any higher value passed will result in an
+            invalid requestExample: 15
+          required: false
+          type: integer
+          format: int32
+        - name: page
+          in: query
+          description: >-
+            Indicates the page number to begin on. When excluded, it will
+            default to the first page (e.g.: page=0). Example: 4
+          required: false
+          type: integer
+          format: int32
+        - name: baths
+          in: query
+          description: >-
+            Number of bathrooms search filter. The filter can be passed as a
+            single exact value or as a range of values.  Excluding the min or
+            max of a range will search to the min or max of the data set
+            respectively. Example values: 4 = single exact match filter; 3-6 =
+            range filter filter; 3- = range filter fetching 3 or more
+            bathrooms. 
+          required: false
+          type: string
+        - name: beds
+          in: query
+          description: >-
+            Number of bedrooms search filter. The filter can be passed as a
+            single exact value or as a range of values; see baths filter for
+            behaviour.Example values: 4 = single exact match filter; 3-6 = range
+            filter filter; 3- = range filter fetching 3 or more bedrooms. 
+          required: false
+          type: string
+        - name: carSpaces
+          in: query
+          description: >-
+            Number of car spaces search filter. The filter can be passed as a
+            single exact value or as a range of values; see baths filter for
+            behaviour.Example values: 4 = single exact match filter; 3-6 = range
+            filter filter; 3- = range filter fetching 3 or more car spaces. 
+          required: false
+          type: string
+        - name: landArea
+          in: query
+          description: >-
+            Filter results based off property's land area, where values passed
+            are in metres squared (m2). The filter can be passed as a single
+            exact value or as a range of values; see baths filter for
+            behaviour.Example values: 300 = exact match filter; 0-300 = zero to
+            300m2 inclusive; 300-600 = 300m2 to 600m2 inclusive; 300- = 300m2
+            and above; -300 = zero to 300m2 inclusive. 
+          required: false
+          type: string
+        - name: pTypes
+          in: query
+          description: >-
+            Property type filter. Can include one or many values, comma
+            separated and invalid values will be ignored. When excluded, it will
+            default to all property types. Available values: 'UNIT', 'FLATS',
+            'COMMERCIAL', 'HOUSE', 'LAND', 'BUSINESS', 'OTHER', 'COMMUNITY',
+            'FARM'. 
+          required: false
+          type: string
+        - name: date
+          in: query
+          description: >-
+            The date of the property's latest advertisement, as recorded by
+            CoreLogic. This needs to be input in the format YYYYMMDD (ISO 8601
+            format without the hyphens).For example, 20151201-20151231 will
+            search for properties that have a latest advertisement date from Dec
+            1, 2015 to Dec 31, 2015, inclusive.Example Values: 20160101 = single
+            exact match filter; 20160101-20160110 = range filter; 20160101- =
+            Jan 1, 2016 to today; -20160101 = everything on or before Jan 1,
+            2016.
+          required: false
+          type: string
+        - name: price
+          in: query
+          description: >-
+            Filter on the price of the For Sale advertisement, expressed as a
+            range.For example, 515000-550000 will search for current ads where
+            the latest listing price is from $515,000 to $550,000 inclusive.
+            Example Values: 400000 = single exact match filter; 300000-600000 =
+            range filter; 500000- = $500,000 and above.
+          required: false
+          type: string
+        - name: period
+          in: query
+          description: >-
+            Filter on the period for the rental term. Accepted values are: 'D' =
+            daily, 'W' = weekly (most common), 'F' = fortnightly, 'M' = monthly,
+            'Q' = quarterly, 'A' = annual
+          required: false
+          type: string
+          enum:
+            - D
+            - F
+            - W
+            - M
+            - Q
+            - A
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/PagedResourcesOfOtmForRentSearchResource'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  '/au/property/street/{streetId}/otmForSale':
+    get:
+      tags:
+        - otm-for-sale-search-controller
+      summary: Search OTM For Sale by Street
+      description: >-
+        Property Search OTM For Sale by Street extends on the basic Search
+        Location operation by allowing users to retrieve a list of properties
+        for a street in a particular suburb and postcode that are on the market
+        (OTM) for sale. The user can filter and sort by the basic attributes
+        along with specific OTM-related ones (price, date, method) and be
+        returned a sorted list that includes the OTM-related data specific to
+        the property's campaign in addition to the basic property info. The
+        default sort of the results is by address.
+      operationId: Search OTM For Sale by Street
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: streetId
+          in: path
+          description: The unique internal identifier for the street.
+          required: true
+          type: integer
+          format: int64
+        - name: sort
+          in: query
+          description: >-
+            Sort the results by these attributes and suffix with a comma and the
+            sort direction (asc=ascending, desc=descending); multiple sorts can
+            be applied by passing additional 'sort' parameters. For example,
+            following the syntax
+            &sort={attribute1},{direction}&sort={attribute2},{direction}...If no
+            sort direction is provided after the attribute, then it will be
+            treated as ascending order. Basic sort attributes are: address
+            (default), beds, baths, carSpaces, landArea. For the other sort
+            attributes available for this service please see the Implementation
+            Notes above. Example: beds,desc
+          required: false
+          type: string
+        - name: size
+          in: query
+          description: >-
+            Used to specify the max number of records returned in the response
+            (aka: page size) and will default to 20 if not specified. Maximum
+            value accepted is 20 and any higher value passed will result in an
+            invalid requestExample: 15
+          required: false
+          type: integer
+          format: int32
+        - name: page
+          in: query
+          description: >-
+            Indicates the page number to begin on. When excluded, it will
+            default to the first page (e.g.: page=0). Example: 4
+          required: false
+          type: integer
+          format: int32
+        - name: baths
+          in: query
+          description: >-
+            Number of bathrooms search filter. The filter can be passed as a
+            single exact value or as a range of values.  Excluding the min or
+            max of a range will search to the min or max of the data set
+            respectively. Example values: 4 = single exact match filter; 3-6 =
+            range filter filter; 3- = range filter fetching 3 or more
+            bathrooms. 
+          required: false
+          type: string
+        - name: beds
+          in: query
+          description: >-
+            Number of bedrooms search filter. The filter can be passed as a
+            single exact value or as a range of values; see baths filter for
+            behaviour.Example values: 4 = single exact match filter; 3-6 = range
+            filter filter; 3- = range filter fetching 3 or more bedrooms. 
+          required: false
+          type: string
+        - name: carSpaces
+          in: query
+          description: >-
+            Number of car spaces search filter. The filter can be passed as a
+            single exact value or as a range of values; see baths filter for
+            behaviour.Example values: 4 = single exact match filter; 3-6 = range
+            filter filter; 3- = range filter fetching 3 or more car spaces. 
+          required: false
+          type: string
+        - name: landArea
+          in: query
+          description: >-
+            Filter results based off property's land area, where values passed
+            are in metres squared (m2). The filter can be passed as a single
+            exact value or as a range of values; see baths filter for
+            behaviour.Example values: 300 = exact match filter; 0-300 = zero to
+            300m2 inclusive; 300-600 = 300m2 to 600m2 inclusive; 300- = 300m2
+            and above; -300 = zero to 300m2 inclusive. 
+          required: false
+          type: string
+        - name: pTypes
+          in: query
+          description: >-
+            Property type filter. Can include one or many values, comma
+            separated and invalid values will be ignored. When excluded, it will
+            default to all property types. Available values: 'UNIT', 'FLATS',
+            'COMMERCIAL', 'HOUSE', 'LAND', 'BUSINESS', 'OTHER', 'COMMUNITY',
+            'FARM'. 
+          required: false
+          type: string
+        - name: date
+          in: query
+          description: >-
+            The date of the property's latest advertisement, as recorded by
+            CoreLogic. This needs to be input in the format YYYYMMDD (ISO 8601
+            format without the hyphens).For example, 20151201-20151231 will
+            search for properties that have a latest advertisement date from Dec
+            1, 2015 to Dec 31, 2015, inclusive.Example Values: 20160101 = single
+            exact match filter; 20160101-20160110 = range filter; 20160101- =
+            Jan 1, 2016 to today; -20160101 = everything on or before Jan 1,
+            2016.
+          required: false
+          type: string
+        - name: price
+          in: query
+          description: >-
+            Filter on the price of the For Sale advertisement, expressed as a
+            range.For example, 515000-550000 will search for current ads where
+            the latest listing price is from $515,000 to $550,000 inclusive.
+            Example Values: 400000 = single exact match filter; 300000-600000 =
+            range filter; 500000- = $500,000 and above.
+          required: false
+          type: string
+        - name: method
+          in: query
+          description: >-
+            The listing method of the property's latest for sale advertisement.
+            Can include one or many values, comma separated and invalid values
+            will be ignored. When excluded, it will default to all listing
+            methods.Accepted values: S = Normal Sale; A = Auction; T = Tender; M
+            = Mortgagee Sale; MA = Mortgagee Auction; O = Offers
+          required: false
+          type: string
+        - name: activeCampaign
+          in: query
+          description: >-
+            Filter on the status of the OTM For Sale campaign. Although a
+            property can be identified as being OTM for sale, there are
+            scenarios when ads may still be displayed despite the property being
+            sold.This flag will help identify those campaigns which are truely
+            active (no sales events against the campaign).This is passed as
+            either 'true' or 'false'.When excluded, this will return all
+            properties, regardless if the campaign is active or not.
+          required: false
+          type: boolean
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/PagedResourcesOfOtmForSaleSearchResource'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+definitions:
+  PageMetadata:
+    type: object
+    properties:
+      number:
+        type: integer
+        format: int64
+      size:
+        type: integer
+        format: int64
+      totalElements:
+        type: integer
+        format: int64
+      totalPages:
+        type: integer
+        format: int64
+  LastSaleDetail:
+    type: object
+    properties:
+      agency:
+        type: string
+        description: Details of the agency who sold the property.
+      agent:
+        type: string
+        description: Details of the agent who sold the property.
+      contractDate:
+        type: string
+        format: date-time
+        description: >-
+          Refers to the sale date of the property (not the settlement date) in
+          format YYYY-MM-DD.Sales within the Sales History List are sorted
+          descending by contractDate.
+      isAgentsAdvice:
+        type: boolean
+        description: >-
+          The complete price that the property sold for as reported by Agents
+          Advice or the Valuer General.
+      isArmsLength:
+        type: boolean
+        description: >-
+          Indicates if the property transfer was made at arms length, meaning
+          that there may be a relationship between the buyer and vendor.True =
+          does not appear to be a relationship between the buyer and
+          vendor;False = may be a relationship between the buyer and
+          vendor.Note, this value will only exist for Valuer General records
+          (isAgentsAdvice=false).
+      price:
+        type: integer
+        format: int32
+        description: >-
+          The complete price that the property sold for as reported by Agents
+          Advice or the Valuer General.
+      settlementDate:
+        type: string
+        format: date-time
+        description: >-
+          Refers to the settlement date of the property (not the contract date)
+          in format YYYY-MM-DD.
+      type:
+        type: string
+        description: >-
+          Refers to the type of sale as notified by the Valuer General (e.g.:
+          Part Sale, Normal Sale, etc.).
+  otmForRentRadiusSummary:
+    type: object
+    properties:
+      address:
+        description: Details of the property's address.
+        $ref: '#/definitions/Address'
+      attributes:
+        description: Details of the property's basic attributes.
+        $ref: '#/definitions/Attributes'
+      coordinate:
+        description: 'Details of the property''s geo coordinates (latitude, longitude).'
+        $ref: '#/definitions/Coordinate'
+      id:
+        type: integer
+        format: int64
+        description: The unique identifier of the property.
+      locationIdentifiers:
+        description: >-
+          Details of the unique location Ids that relate to the property's
+          location.
+        $ref: '#/definitions/LocationIdentifiers'
+      otmForRentDetail:
+        description: >-
+          Details of the property's latest advertisement record, as observed by
+          CoreLogic.
+        $ref: '#/definitions/otmForRentDetail'
+      propertyPhoto:
+        description: >-
+          Details of the property's primary photo provided as numerous URLs
+          varying in size.
+        $ref: '#/definitions/propertyPhoto'
+      propertyStatus:
+        description: 'Details of the property''s current status, as observed by CoreLogic.'
+        $ref: '#/definitions/PropertyStatus'
+      propertySubType:
+        type: string
+        description: >-
+          The sub type of the property, which can offer additional info to that
+          of propertyType.
+      propertySubTypeShort:
+        type: string
+        description: >-
+          The short sub type of the property. This corresponds to the
+          propertyType and provides a more descriptive indication of the
+          property type.
+      propertyType:
+        type: string
+        description: 'The type of the property (e.g.: HOUSE, UNIT, etc.)'
+      radiusSummary:
+        description: >-
+          Details of the property's distance from the centre point (lat/lon) in
+          kilometres (km).
+        $ref: '#/definitions/radiusSummary'
+  Address:
+    type: object
+    properties:
+      singleLineAddress:
+        type: string
+        description: The property's single line address.
+  Attributes:
+    type: object
+    properties:
+      bathrooms:
+        type: integer
+        format: int64
+        description: The number of bathrooms in the property.
+      bedrooms:
+        type: integer
+        format: int64
+        description: The number of bedrooms in the property.
+      carSpaces:
+        type: integer
+        format: int64
+        description: The number of car spaces available at the property.
+      isCalculatedLandArea:
+        type: boolean
+        description: >-
+          For all states excluding Victoria: government land area is returned if
+          available; otherwise CoreLogic Calculated Land Area will be returned
+          if available.For Victoria: CoreLogic Calculated Land Area is returned
+          if available, otherwise government land area will be returned if
+          available. If land area data is not available, then this will not be
+          returned.
+      landArea:
+        type: integer
+        format: int64
+        description: 'The land area of the property, in m2'
+      lockUpGarages:
+        type: integer
+        format: int64
+        description: The number of lock up garages available at the property.
+  OtmForSaleRadiusSearchResource:
+    type: object
+    properties:
+      _links:
+        type: array
+        description: >-
+          Returns a list of relative pagination links. 'first'= The first page.
+          'self' = The current page. 'next' = The next page. 'last' = The last
+          page.
+        items:
+          $ref: '#/definitions/Link'
+      propertySummary:
+        description: >-
+          Contains the basic details of the property including information on
+          its latest advertisement record.
+        $ref: '#/definitions/otmForSaleRadiusSummary'
+  otmForSaleRadiusSummary:
+    type: object
+    properties:
+      address:
+        description: Details of the property's address.
+        $ref: '#/definitions/Address'
+      attributes:
+        description: Details of the property's basic attributes.
+        $ref: '#/definitions/Attributes'
+      coordinate:
+        description: 'Details of the property''s geo coordinates (latitude, longitude).'
+        $ref: '#/definitions/Coordinate'
+      id:
+        type: integer
+        format: int64
+        description: The unique identifier of the property.
+      locationIdentifiers:
+        description: >-
+          Details of the unique location Ids that relate to the property's
+          location.
+        $ref: '#/definitions/LocationIdentifiers'
+      otmForSaleDetail:
+        description: >-
+          Details of the property's latest advertisement record, as observed by
+          CoreLogic.
+        $ref: '#/definitions/otmForSaleDetail'
+      propertyPhoto:
+        description: >-
+          Details of the property's primary photo provided as numerous URLs
+          varying in size.
+        $ref: '#/definitions/propertyPhoto'
+      propertyStatus:
+        description: 'Details of the property''s current status, as observed by CoreLogic.'
+        $ref: '#/definitions/PropertyStatus'
+      propertySubType:
+        type: string
+        description: >-
+          The sub type of the property, which can offer additional info to that
+          of propertyType.
+      propertySubTypeShort:
+        type: string
+        description: >-
+          The short sub type of the property. This corresponds to the
+          propertyType and provides a more descriptive indication of the
+          property type.
+      propertyType:
+        type: string
+        description: 'The type of the property (e.g.: HOUSE, UNIT, etc.)'
+      radiusSummary:
+        description: >-
+          Details of the property's distance from the centre point (lat/lon) in
+          kilometres (km).
+        $ref: '#/definitions/radiusSummary'
+  otmForRentSummary:
+    type: object
+    properties:
+      address:
+        description: Details of the property's address.
+        $ref: '#/definitions/Address'
+      attributes:
+        description: Details of the property's basic attributes.
+        $ref: '#/definitions/Attributes'
+      coordinate:
+        description: 'Details of the property''s geo coordinates (latitude, longitude).'
+        $ref: '#/definitions/Coordinate'
+      id:
+        type: integer
+        format: int64
+        description: The unique identifier of the property.
+      locationIdentifiers:
+        description: >-
+          Details of the unique location Ids that relate to the property's
+          location.
+        $ref: '#/definitions/LocationIdentifiers'
+      otmForRentDetail:
+        description: >-
+          Details of the property's latest advertisement record, as observed by
+          CoreLogic
+        $ref: '#/definitions/otmForRentDetail'
+      propertyPhoto:
+        description: >-
+          Details of the property's primary photo provided as numerous URLs
+          varying in size.
+        $ref: '#/definitions/propertyPhoto'
+      propertyStatus:
+        description: 'Details of the property''s current status, as observed by CoreLogic.'
+        $ref: '#/definitions/PropertyStatus'
+      propertySubType:
+        type: string
+        description: >-
+          The sub type of the property, which can offer additional info to that
+          of propertyType.
+      propertySubTypeShort:
+        type: string
+        description: >-
+          The short sub type of the property. This corresponds to the
+          propertyType and provides a more descriptive indication of the
+          property type.
+      propertyType:
+        type: string
+        description: 'The type of the property (e.g.: HOUSE, UNIT, etc.)'
+  lastSaleSummary:
+    type: object
+    properties:
+      address:
+        description: Details of the property's address.
+        $ref: '#/definitions/Address'
+      attributes:
+        description: Details of the property's basic attributes.
+        $ref: '#/definitions/Attributes'
+      coordinate:
+        description: 'Details of the property''s geo coordinates (latitude, longitude).'
+        $ref: '#/definitions/Coordinate'
+      id:
+        type: integer
+        format: int64
+        description: The unique identifier of the property.
+      lastSaleDetail:
+        description: 'Details of the property''s last sale record, as observed by CoreLogic'
+        $ref: '#/definitions/LastSaleDetail'
+      locationIdentifiers:
+        description: >-
+          Details of the unique location Ids that relate to the property's
+          location.
+        $ref: '#/definitions/LocationIdentifiers'
+      propertyPhoto:
+        description: >-
+          Details of the property's primary photo provided as numerous URLs
+          varying in size.
+        $ref: '#/definitions/propertyPhoto'
+      propertyStatus:
+        description: 'Details of the property''s current status, as observed by CoreLogic.'
+        $ref: '#/definitions/PropertyStatus'
+      propertySubType:
+        type: string
+        description: >-
+          The sub type of the property, which can offer additional info to that
+          of propertyType.
+      propertySubTypeShort:
+        type: string
+        description: >-
+          The short sub type of the property. This corresponds to the
+          propertyType and provides a more descriptive indication of the
+          property type.
+      propertyType:
+        type: string
+        description: 'The type of the property (e.g.: HOUSE, UNIT, etc.)'
+  propertyRadiusSummary:
+    type: object
+    properties:
+      address:
+        description: Details of the property's address.
+        $ref: '#/definitions/Address'
+      attributes:
+        description: Details of the property's basic attributes.
+        $ref: '#/definitions/Attributes'
+      coordinate:
+        description: 'Details of the property''s geo coordinates (latitude, longitude).'
+        $ref: '#/definitions/Coordinate'
+      id:
+        type: integer
+        format: int64
+        description: The unique identifier of the property.
+      locationIdentifiers:
+        description: >-
+          Details of the unique location Ids that relate to the property's
+          location.
+        $ref: '#/definitions/LocationIdentifiers'
+      propertyPhoto:
+        description: >-
+          Details of the property's primary photo provided as numerous URLs
+          varying in size.
+        $ref: '#/definitions/propertyPhoto'
+      propertyStatus:
+        description: 'Details of the property''s current status, as observed by CoreLogic.'
+        $ref: '#/definitions/PropertyStatus'
+      propertySubType:
+        type: string
+        description: >-
+          The sub type of the property, which can offer additional info to that
+          of propertyType.
+      propertySubTypeShort:
+        type: string
+        description: >-
+          The short sub type of the property. This corresponds to the
+          propertyType and provides a more descriptive indication of the
+          property type.
+      propertyType:
+        type: string
+        description: 'The type of the property (e.g.: HOUSE, UNIT, etc.)'
+      radiusSummary:
+        description: >-
+          Details of the property's distance from the centre point (lat/lon) in
+          kilometres (km).
+        $ref: '#/definitions/radiusSummary'
+  PagedResourcesOfOtmForSaleSearchResource:
+    type: object
+    properties:
+      _embedded:
+        type: array
+        items:
+          $ref: '#/definitions/OtmForSaleSearchResource'
+      _links:
+        type: array
+        items:
+          $ref: '#/definitions/Link'
+      page:
+        $ref: '#/definitions/PageMetadata'
+  AddressMatchResponse:
+    type: object
+    properties:
+      matchDetails:
+        description: >-
+          Contains the details relevant to the match that includes the match
+          rule, type, property Id, etc.
+        $ref: '#/definitions/AddressMatchResponseDetail'
+  LastSaleRadiusSearchResource:
+    type: object
+    properties:
+      _links:
+        type: array
+        description: >-
+          Returns a list of relative pagination links. 'first'= The first page.
+          'self' = The current page. 'next' = The next page. 'last' = The last
+          page.
+        items:
+          $ref: '#/definitions/Link'
+      propertySummary:
+        description: >-
+          Contains the basic details of the property including information on
+          its latest sale.
+        $ref: '#/definitions/lastSaleRadiusSummary'
+  PagedResourcesOfPropertyRadiusSearchResource:
+    type: object
+    properties:
+      _embedded:
+        type: array
+        items:
+          $ref: '#/definitions/PropertyRadiusSearchResource'
+      _links:
+        type: array
+        items:
+          $ref: '#/definitions/Link'
+      page:
+        $ref: '#/definitions/PageMetadata'
+  LastSaleSearchResource:
+    type: object
+    properties:
+      _links:
+        type: array
+        description: >-
+          Returns a list of relative pagination links. 'first'= The first page.
+          'self' = The current page. 'next' = The next page. 'last' = The last
+          page.
+        items:
+          $ref: '#/definitions/Link'
+      propertySummary:
+        description: >-
+          Contains the basic details of the property including information on
+          its latest sale.
+        $ref: '#/definitions/lastSaleSummary'
+  OtmForRentRadiusSearchResource:
+    type: object
+    properties:
+      _links:
+        type: array
+        description: >-
+          Returns a list of relative pagination links. 'first'= The first page.
+          'self' = The current page. 'next' = The next page. 'last' = The last
+          page.
+        items:
+          $ref: '#/definitions/Link'
+      propertySummary:
+        description: >-
+          Contains the basic details of the property including information on
+          its latest advertisement record, as observed by CoreLogic.
+        $ref: '#/definitions/otmForRentRadiusSummary'
+  PagedResourcesOfLastSaleSearchResource:
+    type: object
+    properties:
+      _embedded:
+        type: array
+        items:
+          $ref: '#/definitions/LastSaleSearchResource'
+      _links:
+        type: array
+        items:
+          $ref: '#/definitions/Link'
+      page:
+        $ref: '#/definitions/PageMetadata'
+  LocationIdentifiers:
+    type: object
+    properties:
+      localityId:
+        type: integer
+        format: int64
+        description: >-
+          The unique identifier of the locality (suburb) in which the property
+          is located.
+      postCodeId:
+        type: integer
+        format: int64
+        description: >-
+          The unique identifier of the postcode in which the property is
+          located.
+      streetId:
+        type: integer
+        format: int64
+        description: The unique identifier of the street on which the property is located.
+  PagedResourcesOfOtmForSaleRadiusSearchResource:
+    type: object
+    properties:
+      _embedded:
+        type: array
+        items:
+          $ref: '#/definitions/OtmForSaleRadiusSearchResource'
+      _links:
+        type: array
+        items:
+          $ref: '#/definitions/Link'
+      page:
+        $ref: '#/definitions/PageMetadata'
+  PagedResourcesOfPropertySearchResource:
+    type: object
+    properties:
+      _embedded:
+        $ref: '#/definitions/EmbeddedSSS'
+      _links:
+        type: object
+        $ref: '#/definitions/LinkSSS'
+      page:
+        $ref: '#/definitions/PageMetadata'
+  PropertySearchResource:
+    type: object
+    properties:
+      _links:
+        type: array
+        description: >-
+          Returns a list of relative pagination links. 'first'= The first page.
+          'self' = The current page. 'next' = The next page. 'last' = The last
+          page.
+        items:
+          $ref: '#/definitions/Link'
+      propertySummary:
+        description: Contains the basic details of the property.
+        $ref: '#/definitions/propertySummary'
+  PropertySearchResourceSSS:
+    type: object
+    properties:
+      propertySummary:
+        description: Contains the basic details of the property.
+        $ref: '#/definitions/propertySummary'
+  EmbeddedSSS:
+    type: object
+    properties:
+      propertySummaryList:
+        type: array
+        items:
+          $ref: '#/definitions/PropertySearchResourceSSS'
+  LinkSSS:
+    type: object
+    properties:
+      first:
+        $ref: '#/definitions/Link'
+      self:
+        $ref: '#/definitions/Link'
+      next:
+        $ref: '#/definitions/Link'
+      last:
+        $ref: '#/definitions/Link'
+  lastSaleRadiusSummary:
+    type: object
+    properties:
+      address:
+        description: Details of the property's address.
+        $ref: '#/definitions/Address'
+      attributes:
+        description: Details of the property's basic attributes.
+        $ref: '#/definitions/Attributes'
+      coordinate:
+        description: 'Details of the property''s geo coordinates (latitude, longitude).'
+        $ref: '#/definitions/Coordinate'
+      id:
+        type: integer
+        format: int64
+        description: The unique identifier of the property.
+      lastSaleDetail:
+        description: Details of the property's latest sale.
+        $ref: '#/definitions/LastSaleDetail'
+      locationIdentifiers:
+        description: >-
+          Details of the unique location Ids that relate to the property's
+          location.
+        $ref: '#/definitions/LocationIdentifiers'
+      propertyPhoto:
+        description: >-
+          Details of the property's primary photo provided as numerous URLs
+          varying in size.
+        $ref: '#/definitions/propertyPhoto'
+      propertyStatus:
+        description: 'Details of the property''s current status, as observed by CoreLogic.'
+        $ref: '#/definitions/PropertyStatus'
+      propertySubType:
+        type: string
+        description: >-
+          The sub type of the property, which can offer additional info to that
+          of propertyType.
+      propertySubTypeShort:
+        type: string
+        description: >-
+          The short sub type of the property. This corresponds to the
+          propertyType and provides a more descriptive indication of the
+          property type.
+      propertyType:
+        type: string
+        description: 'The type of the property (e.g.: HOUSE, UNIT, etc.)'
+      radiusSummary:
+        description: >-
+          Details of the property's distance from the centre point (lat/lon) in
+          kilometres (km).
+        $ref: '#/definitions/radiusSummary'
+  OtmForRentSearchResource:
+    type: object
+    properties:
+      _links:
+        type: array
+        description: >-
+          Returns a list of relative pagination links. 'first'= The first page.
+          'self' = The current page. 'next' = The next page. 'last' = The last
+          page.
+        items:
+          $ref: '#/definitions/Link'
+      propertySummary:
+        description: >-
+          Contains the basic details of the property including information on
+          its latest advertisement record.
+        $ref: '#/definitions/otmForRentSummary'
+  PagedResourcesOfOtmForRentSearchResource:
+    type: object
+    properties:
+      _embedded:
+        type: array
+        items:
+          $ref: '#/definitions/OtmForRentSearchResource'
+      _links:
+        type: array
+        items:
+          $ref: '#/definitions/Link'
+      page:
+        $ref: '#/definitions/PageMetadata'
+  otmForSaleDetail:
+    type: object
+    properties:
+      agency:
+        type: string
+        description: The current or last agency advertising the property for sale.
+      agent:
+        type: string
+        description: The current or last agent advertising the property for sale.
+      date:
+        type: string
+        format: date-time
+        description: >-
+          The publication date of the latest advertisement recorded in the
+          campaign in format YYYY-MM-DD.
+      isActiveCampaign:
+        type: boolean
+        description: >-
+          Indicates if the campaign is considered 'Active', meaning there are no
+          sales associated with it and we have observed a advertisement
+          publication within the past 60 days.
+      method:
+        type: string
+        description: >-
+          The latest/last listing method for the property in for the for sale
+          campaign and refers to the way the property is being sold.For example,
+          these include 'Normal Sale', 'Auction', etc.
+      priceDescription:
+        type: string
+        description: >-
+          The latest/last price description that the property was listed at in
+          the campaign.Sometimes an actual price is not used but a description
+          such as P.O.A or Offers over
+  Coordinate:
+    type: object
+    properties:
+      latitude:
+        type: number
+        format: double
+        description: Latitude coordinate of the property.
+      longitude:
+        type: number
+        format: double
+        description: Longitude coordinate of the property.
+  otmForSaleSummary:
+    type: object
+    properties:
+      address:
+        description: Details of the property's address.
+        $ref: '#/definitions/Address'
+      attributes:
+        description: Details of the property's basic attributes.
+        $ref: '#/definitions/Attributes'
+      coordinate:
+        description: 'Details of the property''s geo coordinates (latitude, longitude).'
+        $ref: '#/definitions/Coordinate'
+      id:
+        type: integer
+        format: int64
+        description: The unique identifier of the property.
+      locationIdentifiers:
+        description: >-
+          Details of the unique location Ids that relate to the property's
+          location.
+        $ref: '#/definitions/LocationIdentifiers'
+      otmForSaleDetail:
+        description: >-
+          Details of the property's latest advertisement record, as observed by
+          CoreLogic
+        $ref: '#/definitions/otmForSaleDetail'
+      propertyPhoto:
+        description: >-
+          Details of the property's primary photo provided as numerous URLs
+          varying in size.
+        $ref: '#/definitions/propertyPhoto'
+      propertyStatus:
+        description: 'Details of the property''s current status, as observed by CoreLogic.'
+        $ref: '#/definitions/PropertyStatus'
+      propertySubType:
+        type: string
+        description: >-
+          The sub type of the property, which can offer additional info to that
+          of propertyType.
+      propertySubTypeShort:
+        type: string
+        description: >-
+          The short sub type of the property. This corresponds to the
+          propertyType and provides a more descriptive indication of the
+          property type.
+      propertyType:
+        type: string
+        description: 'The type of the property (e.g.: HOUSE, UNIT, etc.)'
+  PagedResourcesOfOtmForRentRadiusSearchResource:
+    type: object
+    properties:
+      _embedded:
+        type: array
+        items:
+          $ref: '#/definitions/OtmForRentRadiusSearchResource'
+      _links:
+        type: array
+        items:
+          $ref: '#/definitions/Link'
+      page:
+        $ref: '#/definitions/PageMetadata'
+  PagedResourcesOfLastSaleRadiusSearchResource:
+    type: object
+    properties:
+      _embedded:
+        type: array
+        items:
+          $ref: '#/definitions/LastSaleRadiusSearchResource'
+      _links:
+        type: array
+        items:
+          $ref: '#/definitions/Link'
+      page:
+        $ref: '#/definitions/PageMetadata'
+  PropertyRadiusSearchResource:
+    type: object
+    properties:
+      _links:
+        type: array
+        description: >-
+          Returns a list of relative pagination links. 'first'= The first page.
+          'self' = The current page. 'next' = The next page. 'last' = The last
+          page.
+        items:
+          $ref: '#/definitions/Link'
+      propertySummary:
+        $ref: '#/definitions/propertyRadiusSummary'
+  propertySummary:
+    type: object
+    properties:
+      address:
+        description: Details of the property's address.
+        $ref: '#/definitions/Address'
+      attributes:
+        description: Details of the property's basic attributes.
+        $ref: '#/definitions/Attributes'
+      coordinate:
+        description: 'Details of the property''s geo coordinates (latitude, longitude).'
+        $ref: '#/definitions/Coordinate'
+      id:
+        type: integer
+        format: int64
+        description: The unique identifier of the property.
+      locationIdentifiers:
+        description: >-
+          Details of the unique location Ids that relate to the property's
+          location.
+        $ref: '#/definitions/LocationIdentifiers'
+      propertyPhoto:
+        description: >-
+          Details of the property's primary photo provided as numerous URLs
+          varying in size.
+        $ref: '#/definitions/propertyPhoto'
+      propertyStatus:
+        description: 'Details of the property''s current status, as observed by CoreLogic.'
+        $ref: '#/definitions/PropertyStatus'
+      propertySubType:
+        type: string
+        description: >-
+          The sub type of the property, which can offer additional info to that
+          of propertyType.
+      propertySubTypeShort:
+        type: string
+        description: >-
+          The short sub type of the property. This corresponds to the
+          propertyType and provides a more descriptive indication of the
+          property type.
+      propertyType:
+        type: string
+        description: 'The type of the property (e.g.: HOUSE, UNIT, etc.)'
+  propertyPhoto:
+    type: object
+    properties:
+      largePhotoUrl:
+        type: string
+        description: Large size photo URL. Photo size 768x512.
+      mediumPhotoUrl:
+        type: string
+        description: Medium size photo URL. Photo size 470x313.
+      scanDate:
+        type: string
+        format: date-time
+        description: The date the image was created in format YYYY-MM-DD.
+      thumbnailPhotoUrl:
+        type: string
+        description: Thumbnail photo URL. Photo size 120x80.
+  AddressMatchResponseDetail:
+    type: object
+    properties:
+      matchRule:
+        type: string
+        description: >-
+          The rule of the resulting match and is a more detailed view of the
+          matchType that can be used to identify the match. For more details,
+          please see the [Address Matcher guide](/address_matcher).
+      matchType:
+        type: string
+        description: >-
+          Details of the resulting match type and only returned when a
+          successful match is returned.For more details, please see the [Address
+          Matcher guide](/address_matcher).
+      propertyId:
+        type: integer
+        format: int64
+        description: >-
+          Unique identifier of the matched property. If a match cannot be found,
+          then this will not be returned.
+      updateDetail:
+        type: string
+        description: >-
+          Indicates the detail code(s) that was applied when modifying the input
+          string. When multiple changes are made to the input string, the codes
+          are concatenated. For example, code 1322 means that rule codes 13 and
+          22 were applied to the string. For more details on the detail code(s),
+          please see the [Address Matcher guide](/address_matcher).
+      updateIndicator:
+        type: string
+        description: >-
+          Identifies whether the original input string has been altered by data
+          cleansing (formatting, updating address with missing elements, etc.).
+          While the cleansing is designed to improve match rates, the
+          updateIndicator will clearly indicate if the input string was
+          modified. Available values are: *O: Original string, so no significant
+          changes were made; *U:Updated, so the string was modified.
+  PropertyStatus:
+    type: object
+    properties:
+      otmForRent:
+        type: boolean
+        description: >-
+          Identifies if a property is currently listed on the market (otm) for
+          rent. A property is flagged as a being on the market for rent if
+          CoreLogic has received notification of a rental campaign within the
+          past 30 days.
+      otmForSale:
+        type: boolean
+        description: >-
+          Identifies if a property is currently listed on the market (otm) for
+          sale. A property is flagged as being on the market (otm) if CoreLogic
+          has not received notification of a sale 30 days prior to the first ad
+          date received or if an ad has been received in the last 6 months and
+          no sale in that time.
+      recentSale:
+        type: boolean
+        description: >-
+          Identifies if a property is a recent sale. A property is flagged as a
+          recent sale if CoreLogic has received notification of a sale within
+          the past 60 days.
+  OtmForSaleSearchResource:
+    type: object
+    properties:
+      _links:
+        type: array
+        description: >-
+          Returns a list of relative pagination links. 'first'= The first page.
+          'self' = The current page. 'next' = The next page. 'last' = The last
+          page.
+        items:
+          $ref: '#/definitions/Link'
+      propertySummary:
+        description: >-
+          Contains the basic details of the property including information on
+          its latest advertisement record.
+        $ref: '#/definitions/otmForSaleSummary'
+  Link:
+    type: object
+    properties:
+      href:
+        type: string
+      rel:
+        type: string
+      templated:
+        type: boolean
+  otmForRentDetail:
+    type: object
+    properties:
+      agency:
+        type: string
+        description: The current or last agency advertising the property for sale.
+      agent:
+        type: string
+        description: The current or last agent advertising the property for sale.
+      date:
+        type: string
+        format: date-time
+        description: >-
+          The publication date of the latest advertisement recorded in the
+          campaign in format YYYY-MM-DD.
+      isActiveCampaign:
+        type: boolean
+        description: >-
+          Indicates if the campaign is considered 'Active', meaning there are no
+          sales associated with it and we have observed a advertisement
+          publication within the past 60 days.
+      period:
+        type: string
+        description: >-
+          Filter on the period for the rental term. Accepted values are: 'D' =
+          daily, 'W' = weekly (most common), 'F' = fortnightly, 'M' = monthly,
+          'Q' = quarterly, 'A' = annual
+      price:
+        type: integer
+        format: int32
+        description: >-
+          The latest/last advertisement price that the property was listed at in
+          the for rent campaign.
+      priceDescription:
+        type: string
+        description: >-
+          The latest/last price description that the property was listed at in
+          the campaign.Sometimes an actual price is not used but a description
+          such as P.O.A or Offers over
+  radiusSummary:
+    type: object
+    properties:
+      distanceFromPoint:
+        type: string
+        description: >-
+          The property's distance from the centre point (lat/lon) in kilometres
+          (km).
